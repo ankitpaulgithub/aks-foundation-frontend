@@ -1,115 +1,119 @@
-import Image from "next/image";
-import { Geist, Geist_Mono } from "next/font/google";
+import Head from "next/head";
+import Navbar from "../components/Navbar";
+import FeatureHighlight from "../components/FeatureHighlight";
+import Footer from "../components/Footer";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+const features = [
+  {
+    title: "Education system",
+    description:
+      "AI-powered education system that provides personalized learning experiences, adaptive quizzes, and real-time feedback to help students excel in their studies.",
+    checklist: [
+      "Personalized learning experiences",
+      "Adaptive quizzes",
+      "Real-time feedback",
+    ],
+    image: (
+      <div className="w-[320px] h-[456px] bg-slate-600 rounded-lg flex items-center justify-center text-white text-xl font-bold">
+        426 x 607
+      </div>
+    ),
+    primaryButton: { label: "Get Started" },
+    secondaryButton: { label: "Contact Us" },
+    reverse: false,
+    className: "",
+  },
+  {
+    title: "Library Management System",
+    description:
+      "AI-powered library management system that provides personalized learning experiences, adaptive quizzes, and real-time feedback to help students excel in their studies.",
+    checklist: [
+      "Personalized learning experiences",
+      "Adaptive quizzes",
+      "Real-time feedback",
+    ],
+    image: (
+      <div className="w-[320px] h-[456px] bg-slate-600 rounded-lg flex items-center justify-center text-white text-xl font-bold">
+        426 x 607
+      </div>
+    ),
+    primaryButton: { label: "Get Started" },
+    secondaryButton: { label: "Contact Us" },
+    reverse: true,
+    className: "bg-gray-200 p-6 rounded-xl",
+  },
+  {
+    title: "Construction Management System",
+    description:
+      "AI-powered construction management system that provides personalized learning experiences, adaptive quizzes, and real-time feedback to help students excel in their studies.",
+    checklist: [
+      "Personalized learning experiences",
+      "Adaptive quizzes",
+      "Real-time feedback",
+    ],
+    image: (
+      <div className="w-[320px] h-[456px] bg-slate-600 rounded-lg flex items-center justify-center text-white text-xl font-bold">
+        426 x 607
+      </div>
+    ),
+    primaryButton: { label: "Get Started" },
+    secondaryButton: { label: "Contact Us" },
+    reverse: false,
+    className: "",
+  },
+];
 
 export default function Home() {
   return (
-    <div
-      className={`${geistSans.className} ${geistMono.className} font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20`}
-    >
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/pages/index.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+    <div className="min-h-screen bg-white">
+      <Head>
+        <title>Empowering Nation with AI Automation</title>
+        <meta name="description" content="AKS Foundation is an AI-driven enterprise platform for MSMEs." />
+      </Head>
+      <Navbar />
+      <main className="flex flex-col md:flex-row items-center justify-between max-w-6xl mx-auto px-4 py-8 sm:px-6 sm:py-12 md:py-16 gap-8 md:gap-12">
+        {/* Left: Text Content */}
+        <div className="flex-1 flex flex-col items-start justify-center max-w-xl mb-8 md:mb-0">
+          <h1 className="text-4xl md:text-5xl font-extrabold text-blue-900 mb-6 leading-tight">
+            Empowering Nation<br />with AI Automation
+          </h1>
+          <p className="text-gray-700 mb-6">
+            AKS Foundation is an AI-driven enterprise platform that simplifies business operations for MSMEs. From automated invoicing to predictive inventory and employee attendance tracking — we make your business smarter, faster, and credit-ready.
+          </p>
+          <button className="bg-green-500 hover:bg-green-600 text-white font-semibold px-8 py-3 rounded-lg shadow mb-6 transition-colors">
+            Get Started
+          </button>
+          <div className="bg-blue-900 text-white p-6 rounded-lg shadow-lg relative mt-4 max-w-md">
+            <span className="absolute -left-4 -top-4 text-4xl text-yellow-400 font-bold">“</span>
+            <p className="italic text-base">
+              "AKS Foundation is revolutionizing the way small businesses manage finances. With seamless automation and real-time insights, MSMEs can now focus on growth instead of paperwork."
+            </p>
+            <span className="block text-yellow-400 text-right mt-2">— Business Today</span>
+          </div>
+        </div>
+        {/* Right: Phone Images */}
+        <div className="flex-1 flex items-center justify-center relative w-full max-w-md">
+          {/* Placeholder for phone images */}
+          <div className="w-[260px] h-[520px] bg-gray-200 rounded-3xl shadow-lg border-4 border-gray-300 relative z-10" />
+          <div className="w-[200px] h-[400px] bg-gray-100 rounded-2xl shadow-lg border-4 border-gray-200 absolute  top-16 z-0 md:left-[-60px] md:top-16" />
         </div>
       </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      <section className="max-w-4xl mx-auto px-4 py-12">
+        <h2 className="text-2xl md:text-3xl font-bold text-center text-blue-900 mb-6">
+          What You Can Do with AKS Foundation
+        </h2>
+        {/* Add feature cards or content here */}
+      </section>
+
+      {/* Features Section */}
+      <section className="w-full bg-white py-8">
+        <div className="max-w-6xl mx-auto flex flex-col gap-16">
+          {features.map((feature, idx) => (
+            <FeatureHighlight key={idx} {...feature} />
+          ))}
+        </div>
+      </section>
+      <Footer />
     </div>
   );
 }
