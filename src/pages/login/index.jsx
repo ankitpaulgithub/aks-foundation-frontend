@@ -1,6 +1,7 @@
 import React from 'react';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
+import { useRouter } from 'next/navigation';
 
 const validationSchema = Yup.object({
   email: Yup.string().email('Invalid email address').required('Email is required'),
@@ -9,6 +10,7 @@ const validationSchema = Yup.object({
 });
 
 const LoginPage = () => {
+  const router = useRouter();
   const formik = useFormik({
     initialValues: {
       email: '',
@@ -18,9 +20,19 @@ const LoginPage = () => {
     validationSchema,
     onSubmit: async (values, { setSubmitting }) => {
       // Simulate async login
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      setSubmitting(false);
+
       console.log(values);
+      if(values.role === 'Education'){
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        router.push('/(education)/dashboard');
+        setSubmitting(false);
+      }
+      else if(values.role === 'Library'){
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        router.push('/(library)/dashboard');
+        setSubmitting(false);
+      }
+      else {}
       // You can handle login logic here
       // alert(JSON.stringify(values, null, 2));
     },
