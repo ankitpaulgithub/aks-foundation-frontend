@@ -6,7 +6,7 @@ import React from 'react';
 // Dynamically import Chart to disable SSR
 const Chart = dynamic(() => import('react-apexcharts'), { ssr: false });
 
-const ApexChart = () => {
+const ApexChart = ({series}) => {
   const options = {
     chart: {
       type: 'donut',
@@ -42,7 +42,7 @@ const ApexChart = () => {
     }
   };
 
-  const series = [6.7, 13.3, 20.0, 26.7, 33.3];
+  // const series = [6.7, 13.3, 20.0, 26.7, 93.3];
 
   return (
     <div className='flex w-full justify-center items-center'>
