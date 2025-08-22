@@ -56,7 +56,7 @@ const sutudentCards1 = [
   {
     icon: <FaIndianRupeeSign className="text-2xl md:text-3xl text-white" />,
     label: "Fee by ID",
-    route: "/(education)/fee/search",
+    route: "/(education)/fee/2345678",
     bg: "bg-purple-700",
   },
   {

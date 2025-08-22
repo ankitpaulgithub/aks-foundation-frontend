@@ -84,6 +84,21 @@ const StudentDetails = () => {
     <Layout>
       <div className="bg-gray-100 min-h-screen p-4">
         <div className="max-w-7xl mx-auto">
+
+          {/* Search bar */}
+          <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+            <div className="flex flex-col sm:items-center sm:justify-between">
+                <h1 className="text-2xl font-bold text-gray-800">Search Student by Roll No.</h1>
+              <div className='flex w-full mx-auto justify-center my-3'>
+              <input type="text" placeholder='Search by Roll no.' className='bg-gray-200 rounded-full p-3 px-6 mx-5 w-full sm:max-w-2xl outline-blue-300 ' />
+              <button  className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-full flex items-center gap-2 cursor-pointer hover:scale-105 transition-colors duration-300">
+                  Search
+                </button>
+              </div>
+            </div>
+          </div>
+
+
           {/* Header with Actions */}
           <div className="bg-white rounded-lg shadow-md p-6 mb-6">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
