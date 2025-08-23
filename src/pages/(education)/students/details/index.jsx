@@ -80,6 +80,40 @@ const StudentDetails = () => {
     return status === 'Yes' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
   }
 
+  const printForm = async () => {
+    try {
+      const res = await fetch('/api/admission-form');
+      if (!res.ok) throw new Error("Failed to fetch PDF");
+  
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+  
+      // Create hidden iframe
+      const iframe = document.createElement('iframe');
+      iframe.style.position = 'fixed';
+      iframe.style.right = '0';
+      iframe.style.bottom = '0';
+      iframe.style.width = '0';
+      iframe.style.height = '0';
+      iframe.style.border = 'none';
+      iframe.src = url;
+  
+      document.body.appendChild(iframe);
+  
+      iframe.onload = () => {
+        iframe.contentWindow.focus();
+        iframe.contentWindow.print();
+  
+        // Cleanup
+        URL.revokeObjectURL(url);
+        setTimeout(() => document.body.removeChild(iframe), 1000);
+      };
+    } catch (err) {
+      console.error("Print failed:", err);
+    }
+  };
+  
+
   return (
     <Layout>
       <div className="bg-gray-100 min-h-screen p-4">
@@ -111,7 +145,7 @@ const StudentDetails = () => {
                   <FaEdit className="text-sm" />
                   Edit
                 </button>
-                <button className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md flex items-center gap-2 transition-colors hover:scale-105 duration-300">
+                <button onClick={printForm} className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md flex items-center gap-2 transition-colors hover:scale-105 duration-300">
                   <FaPrint className="text-sm" />
                   Print
                 </button>
