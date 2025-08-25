@@ -2,106 +2,418 @@
 import React, { useState, useEffect } from 'react'
 import Layout from '../../../../components/education/Layout'
 
-/*
-  Usage Examples:
-  
-  // For creating a new student:
-  <Admission />
-  
-  // For editing an existing student:
-  <Admission 
-    initialData={{
-      firstName: 'RAMESH',
-      lastName: 'KUMAR',
-      asPerSSC: 'RAMESH KUMAR',
-      fatherName: 'SURESH KUMAR',
-      // ... other student data
-    }}
-    isEdit={true}
-  />
-*/
-
 const Admission = ({ initialData = null, isEdit = false }) => {
+  // Configuration objects for form fields
+  const bloodGroupOptions = [
+    { value: 'A+', label: 'A+' }, { value: 'A-', label: 'A-' },
+    { value: 'B+', label: 'B+' }, { value: 'B-', label: 'B-' },
+    { value: 'AB+', label: 'AB+' }, { value: 'AB-', label: 'AB-' },
+    { value: 'O+', label: 'O+' }, { value: 'O-', label: 'O-' }
+  ]
+
+  const maritalStatusOptions = [
+    { value: 'Single', label: 'Single' }, { value: 'Married', label: 'Married' },
+    { value: 'Divorced', label: 'Divorced' }, { value: 'Widowed', label: 'Widowed' }
+  ]
+
+  const categoryOptions = [
+    { value: 'General', label: 'General' }, { value: 'OBC', label: 'OBC' },
+    { value: 'EBC', label: 'EBC' }, { value: 'SC', label: 'SC' },
+    { value: 'ST', label: 'ST' }, { value: 'EWS', label: 'EWS' }
+  ]
+
+  const areaOptions = [
+    { value: 'Rural', label: 'Rural' }, { value: 'Urban', label: 'Urban' }
+  ]
+
+  const genderOptions = ['Male', 'Female', 'Other']
+
+  const courseOptions = [
+    { value: '10th', label: '10th' }, { value: '12th', label: '12th' },
+    { value: 'Graduation', label: 'Graduation' }, { value: 'Post Graduation', label: 'Post Graduation' },
+    { value: 'Other', label: 'Other Qualification' }
+  ]
+
+  const otherCourseOptions = [
+    { value: 'DCA', label: 'DCA' }, { value: 'ADCA', label: 'ADCA' }
+  ]
+
+  const programOptions = [
+    { value: 'KYP', label: 'KYP' }, { value: 'SHA', label: 'SHA' }
+  ]
+
+  const bankOptions = [
+    { value: 'AirTel Money', label: 'AirTel Money' }, { value: 'Allahabad Bank', label: 'Allahabad Bank' },
+    { value: 'Andhra Bank', label: 'Andhra Bank' }, { value: 'AXIS Bank', label: 'AXIS Bank' },
+    { value: 'Bandhan Bank', label: 'Bandhan Bank' }, { value: 'Bank of Baroda', label: 'Bank of Baroda' },
+    { value: 'Bank of India', label: 'Bank of India' }, { value: 'Bank of Maharastra', label: 'Bank of Maharastra' },
+    { value: 'Bharatiya Mahila Bank', label: 'Bharatiya Mahila Bank' }, { value: 'Bihar Gramin Bank', label: 'Bihar Gramin Bank' },
+    { value: 'BIHAR KSHETRIYA GRAMIN BANK', label: 'BIHAR KSHETRIYA GRAMIN BANK' }, { value: 'Bihar State CO-OP Bank LTD.', label: 'Bihar State CO-OP Bank LTD.' },
+    { value: 'Canara Bank', label: 'Canara Bank' }, { value: 'Central Bank of India', label: 'Central Bank of India' },
+    { value: 'Corporation Bank', label: 'Corporation Bank' }, { value: 'DCB Bank Limited', label: 'DCB Bank Limited' },
+    { value: 'Dena Bank', label: 'Dena Bank' }, { value: 'Federal Bank', label: 'Federal Bank' },
+    { value: 'FINO Payments Bank LTD.', label: 'FINO Payments Bank LTD.' }, { value: 'HDFC Bank', label: 'HDFC Bank' },
+    { value: 'ICICI Bank', label: 'ICICI Bank' }, { value: 'IDBI Bank', label: 'IDBI Bank' },
+    { value: 'IDFC Bank', label: 'IDFC Bank' }, { value: 'Indian Bank', label: 'Indian Bank' },
+    { value: 'Indian Overseas Bank', label: 'Indian Overseas Bank' }, { value: 'Indian Post Bank', label: 'Indian Post Bank' },
+    { value: 'Indusind Bank LTD.', label: 'Indusind Bank LTD.' }, { value: 'ING Vysya Bank', label: 'ING Vysya Bank' },
+    { value: 'JANA Small Finance Bank LTD', label: 'JANA Small Finance Bank LTD' }, { value: 'JK Bank', label: 'JK Bank' },
+    { value: 'Karnataka Bank', label: 'Karnataka Bank' }, { value: 'Karur VYSYA Bank', label: 'Karur VYSYA Bank' },
+    { value: 'Kotak Mahindra Bank LTD.', label: 'Kotak Mahindra Bank LTD.' }, { value: 'Madhya Bihar Gramin Bank', label: 'Madhya Bihar Gramin Bank' },
+    { value: 'Oriental Bank of Comm.', label: 'Oriental Bank of Comm.' }, { value: 'PAYTM Payments Bank LTD.', label: 'PAYTM Payments Bank LTD.' },
+    { value: 'Punjab & Sind Bank', label: 'Punjab & Sind Bank' }, { value: 'Punjab National Bank', label: 'Punjab National Bank' },
+    { value: 'RESERVE BANK OF INDIA, PAD', label: 'RESERVE BANK OF INDIA, PAD' }, { value: 'Samastipur Kshetriya Gramin Bank', label: 'Samastipur Kshetriya Gramin Bank' },
+    { value: 'South Indian Bank', label: 'South Indian Bank' }, { value: 'Standard Chartered Bank LTD.', label: 'Standard Chartered Bank LTD.' },
+    { value: 'State Bank of Hyderabad', label: 'State Bank of Hyderabad' }, { value: 'State Bank of India (SBI)', label: 'State Bank of India (SBI)' },
+    { value: 'State Bank of Mysore', label: 'State Bank of Mysore' }, { value: 'State Bank of Patiala', label: 'State Bank of Patiala' },
+    { value: 'State Bank of Travancore', label: 'State Bank of Travancore' }, { value: 'Syndicate Bank', label: 'Syndicate Bank' },
+    { value: 'UCO Bank', label: 'UCO Bank' }, { value: 'Ujjivan Small Finance Bank Limited', label: 'Ujjivan Small Finance Bank Limited' },
+    { value: 'Union Bank of India', label: 'Union Bank of India' }, { value: 'United Bank of India', label: 'United Bank of India' },
+    { value: 'Utkarsh Small Finance Bank', label: 'Utkarsh Small Finance Bank' }, { value: 'Uttar Bihar Gramin Bank', label: 'Uttar Bihar Gramin Bank' },
+    { value: 'Vijaya Bank', label: 'Vijaya Bank' }, { value: 'YES Bank', label: 'YES Bank' }
+  ]
+
+  const documentFields = [
+    { name: 'studentImage', label: 'Student Image', required: true, accept: 'image/*' },
+    { name: 'bankPasbook', label: 'Bank Pasbook', required: true, accept: 'image/*' },
+    { name: 'residentialCertificate', label: 'Residential Certificate', required: true, accept: 'image/*' },
+    { name: 'provisionalCertificate', label: 'Provisional Certificate', required: true, accept: 'image/*' },
+    { name: 'aadhaarFront', label: 'Aadhaar Card Front', required: true, accept: 'image/*' },
+    { name: 'aadhaarBack', label: 'Aadhar Card Back', required: true, accept: 'image/*' },
+    { name: 'drccReceipt', label: 'DRCC Receipt', required: true, accept: 'image/*' },
+    { name: 'counselorSignature', label: 'Counselor Signature', required: false, accept: '.pdf,.jpg,.jpeg,.png' },
+    { name: 'applicantSignature', label: 'Applicant Signature', required: false, accept: '.pdf,.jpg,.jpeg,.png' }
+  ]
+
+  // Form field configurations
+  const personalDetailsFields = [
+    { name: 'firstName', label: 'First Name', required: true, type: 'text', placeholder: 'Enter first name' },
+    { name: 'middleName', label: 'Middle Name', required: false, type: 'text', placeholder: 'Enter middle name' },
+    { name: 'lastName', label: 'Last Name', required: true, type: 'text', placeholder: 'Enter last name' },
+    { name: 'fatherName', label: 'Father\'s Name', required: true, type: 'text', placeholder: 'Enter father\'s full name' },
+    { name: 'motherName', label: 'Mother\'s Name', required: true, type: 'text', placeholder: 'Enter mother\'s full name' },
+    { name: 'dateOfBirth', label: 'Date of Birth', required: true, type: 'date' }
+  ]
+
+  const addressFields = [
+    { name: 'state', label: 'State', required: true, type: 'text', placeholder: 'Enter state name' },
+    { name: 'district', label: 'District', required: true, type: 'text', placeholder: 'Enter district name' },
+    { name: 'villageName', label: 'Village Name', required: false, type: 'text', placeholder: 'Enter village/town name' },
+    { name: 'pinCode', label: 'Pin Code', required: true, type: 'text', placeholder: '6 digit pin code', pattern: '[0-9]{6}', maxLength: '6' },
+    { name: 'blockNagarNigam', label: 'Block / Nagar Nigam / Nagar Parishad / Panchayat', required: false, type: 'text', placeholder: 'Enter block/nagar nigam/nagar parishad/panchayat' },
+    { name: 'postOffice', label: 'Post Office', required: false, type: 'text', placeholder: 'Enter post office name' }
+  ]
+
+  const mobileFields = [
+    { name: 'mobile1', label: 'Mobile Number 1', required: true },
+    { name: 'mobile2', label: 'Mobile Number 2', required: false },
+    { name: 'mobile3', label: 'Mobile Number 3', required: false },
+    { name: 'whatsapp', label: 'WhatsApp Number', required: false }
+  ]
+
+  const bankDetailFields = [
+    { name: 'accountNumber', label: 'Account Number', placeholder: 'Enter account number' },
+    { name: 'branchName', label: 'Branch Name', placeholder: 'Enter branch name' },
+    { name: 'ifscCode', label: 'IFSC Code', placeholder: 'Enter IFSC code' }
+  ]
+
+  const addressTextareaFields = [
+    { name: 'residentialAddress', label: 'Residential Address', required: true, placeholder: 'Enter your current residential address' },
+    { name: 'permanentAddress', label: 'Permanent Address', required: false, placeholder: 'Enter your permanent address (if different from residential)' }
+  ]
+
+  const personalSelectFields = [
+    { name: 'bloodGroup', label: 'Blood Group', required: false, options: bloodGroupOptions, placeholder: 'Select Blood Group' },
+    { name: 'maritalStatus', label: 'Marital Status', required: false, options: maritalStatusOptions, placeholder: 'Select Marital Status' },
+    { name: 'category', label: 'Category', required: true, options: categoryOptions, placeholder: 'Select Category' }
+  ]
+
+  const conditionalCertificates = [
+    { 
+      show: (courseName) => courseName && courseName !== '10th',
+      label: '10th Certificate'
+    },
+    { 
+      show: (courseName) => courseName && courseName !== '10th' && !courseName.startsWith('12th'),
+      label: '12th Certificate'
+    }
+  ]
+
+  const academicLevels = [
+    { key: 'class10', title: 'Class 10th Information', alwaysRequired: true, fields: [
+      { name: 'class10SessionYear', label: 'Session Year', placeholder: 'e.g., 2020-2021' },
+      { name: 'class10RollNo', label: 'Roll No.', placeholder: 'e.g., 0000000' },
+      { name: 'class10SchoolName', label: 'School Name', placeholder: 'School name' }
+    ]},
+    { key: 'class12', title: 'Class 12th Information', requiredFor: ['12th', 'Graduation', 'Post Graduation'], fields: [
+      { name: 'class12SessionYear', label: 'Session Year', placeholder: 'e.g., 2022-2023' },
+      { name: 'class12RollNo', label: 'Roll No.', placeholder: 'e.g., 0000000' },
+      { name: 'class12SchoolName', label: 'School Name', placeholder: 'School name' }
+    ]},
+    { key: 'graduation', title: 'Graduation Information', requiredFor: ['Graduation', 'Post Graduation'], fields: [
+      { name: 'graduationSessionYear', label: 'Session Year', placeholder: 'e.g., 2021-2025' },
+      { name: 'graduationRollNo', label: 'Roll No.', placeholder: 'e.g., 0000000' },
+      { name: 'graduationSchoolName', label: 'College/University Name', placeholder: 'College/University name' }
+    ]},
+    { key: 'postGraduation', title: 'Post Graduation Information', requiredFor: ['Post Graduation'], fields: [
+      { name: 'postGraduationSessionYear', label: 'Session Year', placeholder: 'e.g., 2025-2027' },
+      { name: 'postGraduationRollNo', label: 'Roll No.', placeholder: 'e.g., 0000000' },
+      { name: 'postGraduationSchoolName', label: 'College/University Name', placeholder: 'College/University name' }
+    ]}
+  ]
+
+  const officeUseOnlyFields = [
+    { name: 'regNo', label: 'Reg. No.', type: 'text', placeholder: 'Enter registration number' },
+    { name: 'regDate', label: 'Date', type: 'date' },
+    { name: 'program', label: 'Program', type: 'text', placeholder: 'Enter program name' },
+    { name: 'payment', label: 'Payment', type: 'text', placeholder: 'Enter payment amount' },
+    { name: 'paymentDate', label: 'Payment Date', type: 'date' },
+    { name: 'drccVerificationDate', label: 'DRCC Verification Date', type: 'date' },
+    { name: 'learnerCode', label: 'Learner Code', type: 'text', placeholder: 'Enter learner code' },
+    { name: 'batchStartDate', label: 'Batch Start Date', type: 'date' },
+    { name: 'batch', label: 'Batch', type: 'text', placeholder: 'Enter batch name' },
+    { name: 'batchCode', label: 'Batch Code', type: 'text', placeholder: 'Enter batch code' },
+    { name: 'batchTime1', label: 'Batch Time 1', type: 'time' },
+    { name: 'batchTime2', label: 'Batch Time 2', type: 'time' }
+  ]
+
+  const officeUseOnly2Fields = [
+    { name: 'enrollmentNo', label: 'Enrollment No.', type: 'text', placeholder: 'Enter enrollment number' },
+    { name: 'enrollmentDate', label: 'Enrollment Date', type: 'date' },
+    { name: 'program2', label: 'Program', type: 'text', placeholder: 'Enter program name' },
+    { name: 'courseDuration', label: 'Course Duration', type: 'text', placeholder: 'e.g., 6 months, 1 year' },
+    { name: 'batchName', label: 'Batch Name', type: 'text', placeholder: 'Enter batch name' },
+    { name: 'batchTime', label: 'Batch Time', type: 'time' },
+    { name: 'certificateNo', label: 'Certificate No.', type: 'text', placeholder: 'Enter certificate number' },
+    { name: 'dateOfIssue', label: 'Date of Issue', type: 'date' }
+  ]
+
   const defaultFormData = {
     // Applicant Details
-    firstName: '',
-    lastName: '',
-    asPerSSC: '',
-    fatherName: '',
-    motherName: '',
-    dateOfBirth: '',
-    gender: '',
-    bloodGroup: '',
-    maritalStatus: '',
-    category: '',
-    aadhaarNumber: '',
-    mobile1: '',
-    mobile2: '',
-    mobile3: '',
-    emailAddress: '',
-    
+    firstName: '', middleName: '', lastName: '', asPerSSC: '',
+    fatherName: '', motherName: '', dateOfBirth: '', gender: '',
+    bloodGroup: '', maritalStatus: '', category: '', aadhaarNumber: '',
+    mobile1: '', mobile2: '', mobile3: '', whatsapp: '', emailAddress: '',
+
     // Address Details
-    residentialAddress: '',
-    permanentAddress: '',
-    state: '',
-    district: '',
-    villageName: '',
-    pinCode: '',
-    blockNagarNigam: '',
-    postOffice: '',
-    
+    residentialAddress: '', permanentAddress: '', state: '', area: '', district: '',
+    villageName: '', pinCode: '', blockNagarNigam: '', postOffice: '',
+
     // Academic Details
-    sessionYear: '',
-    courseName: '',
-    
+    sessionYear: '', courseName: '', studentProgram: '',
+
+    // Class Details
+    class10SessionYear: '', class10RollNo: '', class10SchoolName: '',
+    class12SessionYear: '', class12RollNo: '', class12SchoolName: '',
+    graduationSessionYear: '', graduationRollNo: '', graduationSchoolName: '',
+    postGraduationSessionYear: '', postGraduationRollNo: '', postGraduationSchoolName: '',
+
     // Bank Details
-    bankName: '',
-    accountNumber: '',
-    branchName: '',
-    ifscCode: '',
-    
+    bankName: '', accountNumber: '', branchName: '', ifscCode: '',
+
     // Documents
-    studentImage: '',
-    tenthCertificate: '',
-    twelfthCertificate: '',
-    counselorSignature: '',
-    applicantSignature: '',
-    
+    studentImage: '', tenthCertificate: '', twelfthCertificate: '',
+    counselorSignature: '', applicantSignature: '',
+
     // Additional fields
-    otherCourseName: ''
+    otherCourseName: '',
+
+    // Office Use Only fields
+    regNo: '', regDate: '', program: '', payment: '', paymentDate: '',
+    drccVerificationDate: '', learnerCode: '', batchStartDate: '', batch: '',
+    batchCode: '', batchTime1: '', batchTime2: '', remarks: '',
+
+    // Office Use Only 2 fields
+    enrollmentNo: '', enrollmentDate: '', program2: '', courseDuration: '',
+    batchName: '', batchTime: '', certificateNo: '', dateOfIssue: '', remarks2: ''
   }
 
   const [formData, setFormData] = useState(initialData || defaultFormData)
 
-  // Update form data when initialData prop changes
   useEffect(() => {
-    if (initialData) {
-      setFormData(initialData)
-    }
+    if (initialData) setFormData(initialData)
   }, [initialData])
 
   const handleInputChange = (field, value) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }))
+    setFormData(prev => ({ ...prev, [field]: value }))
+  }
+
+  // Helper function to render select options
+  const renderSelectOptions = (options, placeholder = 'Select option') => (
+    <>
+      <option value="">{placeholder}</option>
+      {options.map(option => (
+        <option key={option.value} value={option.value}>{option.label}</option>
+      ))}
+    </>
+  )
+
+  // Helper function to render input field
+  const renderInputField = (field, required = false, type = 'text', pattern = null, maxLength = null) => (
+    <div className="bg-orange-50 p-3 rounded">
+      <label className="block text-sm font-medium text-gray-700 mb-1">
+        {field.label} {required && <span className="text-red-500">*</span>}
+      </label>
+      <input
+        type={type}
+        required={required}
+        pattern={pattern}
+        maxLength={maxLength}
+        value={formData[field.name] || ''}
+        onChange={(e) => handleInputChange(field.name, e.target.value)}
+        className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent"
+        placeholder={field.placeholder}
+      />
+    </div>
+  )
+
+  // Helper function to render select field
+  const renderSelectField = (field, options, placeholder) => (
+    <div className="bg-orange-50 p-3 rounded">
+      <label className="block text-sm font-medium text-gray-700 mb-1">
+        {field.label} {field.required && <span className="text-red-500">*</span>}
+      </label>
+      <select
+        required={field.required}
+        value={formData[field.name]}
+        onChange={(e) => handleInputChange(field.name, e.target.value)}
+        className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent"
+      >
+        {renderSelectOptions(options, placeholder)}
+      </select>
+    </div>
+  )
+
+  // Helper function to render academic section
+  const renderAcademicSection = (level) => {
+    const shouldShow = level.alwaysRequired || 
+      (level.requiredFor && level.requiredFor.includes(formData.courseName))
+
+    if (!shouldShow) return null
+
+    return (
+      <div className="mt-6">
+        <h3 className="text-lg font-medium text-gray-800 ml-3">{level.title}</h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {level.fields.map(field => (
+            <div key={field.name} className="bg-orange-50 p-3 rounded">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                {field.label} <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                required
+                value={formData[field.name] || ''}
+                onChange={(e) => handleInputChange(field.name, e.target.value)}
+                className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent"
+                placeholder={field.placeholder}
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  // Helper function to render office use only section
+  const renderOfficeUseOnly = (fields, title, remarksField) => (
+    <div className="mb-8">
+      <h2 className="text-xl font-semibold text-gray-800 mb-4 border-b-2 border-orange-200 pb-2">
+        {title}
+      </h2>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {fields.map(field => (
+          <div key={field.name} className="bg-orange-50 p-3 rounded">
+            <label className="block text-sm font-medium text-gray-700 mb-1">{field.label}</label>
+            <input
+              type={field.type}
+              value={formData[field.name] || ''}
+              onChange={(e) => handleInputChange(field.name, e.target.value)}
+              className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent"
+              placeholder={field.placeholder}
+            />
+          </div>
+        ))}
+      </div>
+      <div className="mt-4">
+        <div className="bg-orange-50 p-3 rounded">
+          <label className="block text-sm font-medium text-gray-700 mb-1">Remarks</label>
+          <textarea
+            rows="3"
+            value={formData[remarksField] || ''}
+            onChange={(e) => handleInputChange(remarksField, e.target.value)}
+            className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent"
+            placeholder="Enter any remarks or notes"
+          />
+        </div>
+      </div>
+    </div>
+  )
+
+  // Comprehensive validation function
+  const validateForm = () => {
+    const errors = []
+    const requiredFields = [
+      { field: 'firstName', label: 'First Name' }, { field: 'lastName', label: 'Last Name' },
+      { field: 'fatherName', label: 'Father\'s Name' }, { field: 'motherName', label: 'Mother\'s Name' },
+      { field: 'dateOfBirth', label: 'Date of Birth' }, { field: 'gender', label: 'Gender' },
+      { field: 'category', label: 'Category' }, { field: 'aadhaarNumber', label: 'Aadhaar Number' },
+      { field: 'mobile1', label: 'Mobile Number 1' }, { field: 'emailAddress', label: 'Email Address' },
+      { field: 'area', label: 'Rural/Urban Area' }, { field: 'state', label: 'State' },
+      { field: 'district', label: 'District' }, { field: 'pinCode', label: 'Pin Code' },
+      { field: 'residentialAddress', label: 'Residential Address' }, { field: 'courseName', label: 'Course Name' }
+    ]
+
+    requiredFields.forEach(({ field, label }) => {
+      if (!formData[field]?.trim()) errors.push(`${label} is required`)
+    })
+
+    // Validation patterns
+    const validations = [
+      { field: 'aadhaarNumber', pattern: /^[0-9]{12}$/, message: 'Aadhaar Number must be exactly 12 digits' },
+      { field: 'mobile1', pattern: /^[0-9]{10}$/, message: 'Mobile Number 1 must be exactly 10 digits' },
+      { field: 'mobile2', pattern: /^[0-9]{10}$/, message: 'Mobile Number 2 must be exactly 10 digits' },
+      { field: 'mobile3', pattern: /^[0-9]{10}$/, message: 'Mobile Number 3 must be exactly 10 digits' },
+      { field: 'whatsapp', pattern: /^[0-9]{10}$/, message: 'WhatsApp Number must be exactly 10 digits' },
+      { field: 'pinCode', pattern: /^[0-9]{6}$/, message: 'Pin Code must be exactly 6 digits' },
+      { field: 'emailAddress', pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: 'Please enter a valid email address' }
+    ]
+
+    validations.forEach(({ field, pattern, message }) => {
+      if (formData[field] && !pattern.test(formData[field])) errors.push(message)
+    })
+
+    // Course-specific validation
+    if (formData.courseName === 'Other' && !formData.otherCourseName?.trim()) {
+      errors.push('Please specify the course name when selecting "Other"')
+    }
+
+    // Academic validation
+    academicLevels.forEach(level => {
+      if (level.alwaysRequired || (level.requiredFor && level.requiredFor.includes(formData.courseName))) {
+        level.fields.forEach(field => {
+          if (!formData[field.name]?.trim()) {
+            errors.push(`${field.label} is required`)
+          }
+        })
+      }
+    })
+
+    return errors
   }
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    
-    // Validate conditional requirements
-    if (formData.courseName === 'Other' && !formData.otherCourseName?.trim()) {
-      alert('Please specify the course name when selecting "Other"')
+    const validationErrors = validateForm()
+    if (validationErrors.length > 0) {
+      alert('Please fix the following errors:\n' + validationErrors.join('\n'))
       return
     }
     
     if (isEdit) {
       console.log('Student updated:', formData)
-      // Handle update logic here
     } else {
       console.log('New student admission:', formData)
-      // Handle create logic here
     }
   }
 
@@ -122,94 +434,36 @@ const Admission = ({ initialData = null, isEdit = false }) => {
               <h2 className="text-xl font-semibold text-gray-800 mb-4 border-b-2 border-orange-200 pb-2">
                 Applicant Personal Details
               </h2>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {/* First Name */}
-                <div className="bg-orange-50 p-3 rounded">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    First Name <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.firstName}
-                    onChange={(e) => handleInputChange('firstName', e.target.value)}
-                    className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent"
-                    placeholder="Enter first name"
-                  />
-                </div>
+                {/* Personal Details Fields */}
+                {personalDetailsFields.map(field => (
+                  <div key={field.name} className="bg-orange-50 p-3 rounded">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      {field.label} {field.required && <span className="text-red-500">*</span>}
+                    </label>
+                    <input
+                      type={field.type}
+                      required={field.required}
+                      value={formData[field.name]}
+                      onChange={(e) => handleInputChange(field.name, e.target.value)}
+                      className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent"
+                      placeholder={field.placeholder}
+                    />
+                  </div>
+                ))}
 
-                {/* Last Name */}
-                <div className="bg-orange-50 p-3 rounded">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Last Name <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.lastName}
-                    onChange={(e) => handleInputChange('lastName', e.target.value)}
-                    className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent"
-                    placeholder="Enter last name"
-                  />
-                </div>
-
-                {/* As per SSC */}
+                {/* As per SSC - Auto-generated */}
                 <div className="bg-orange-50 p-3 rounded">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     As per SSC <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
-                    required
-                    value={formData.asPerSSC}
-                    onChange={(e) => handleInputChange('asPerSSC', e.target.value)}
+                    disabled
+                    value={`${formData.firstName} ${formData.middleName} ${formData.lastName}`}
                     className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent"
-                    placeholder="Enter name as per SSC certificate"
-                  />
-                </div>
-
-                {/* Father's Name */}
-                <div className="bg-orange-50 p-3 rounded">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Father's Name <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.fatherName}
-                    onChange={(e) => handleInputChange('fatherName', e.target.value)}
-                    className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent"
-                    placeholder="Enter father's full name"
-                  />
-                </div>
-
-                {/* Mother's Name */}
-                <div className="bg-orange-50 p-3 rounded">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Mother's Name <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.motherName}
-                    onChange={(e) => handleInputChange('motherName', e.target.value)}
-                    className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent"
-                    placeholder="Enter mother's full name"
-                  />
-                </div>
-
-                {/* Date of Birth */}
-                <div className="bg-orange-50 p-3 rounded">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Date of Birth <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="date"
-                    required
-                    value={formData.dateOfBirth}
-                    onChange={(e) => handleInputChange('dateOfBirth', e.target.value)}
-                    className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent"
+                    placeholder="Name as per SSC certificate"
                   />
                 </div>
 
@@ -219,177 +473,56 @@ const Admission = ({ initialData = null, isEdit = false }) => {
                     Gender <span className="text-red-500">*</span>
                   </label>
                   <div className="flex gap-4 mt-2">
-                    <label className="flex items-center">
-                      <input
-                        type="radio"
-                        name="gender"
-                        value="Male"
-                        required
-                        checked={formData.gender === 'Male'}
-                        onChange={(e) => handleInputChange('gender', e.target.value)}
-                        className="mr-2"
-                      />
-                      Male
-                    </label>
-                    <label className="flex items-center">
-                      <input
-                        type="radio"
-                        name="gender"
-                        value="Female"
-                        required
-                        checked={formData.gender === 'Female'}
-                        onChange={(e) => handleInputChange('gender', e.target.value)}
-                        className="mr-2"
-                      />
-                      Female
-                    </label>
-                    <label className="flex items-center">
-                      <input
-                        type="radio"
-                        name="gender"
-                        value="Other"
-                        required
-                        checked={formData.gender === 'Other'}
-                        onChange={(e) => handleInputChange('gender', e.target.value)}
-                        className="mr-2"
-                      />
-                      Other
-                    </label>
+                    {genderOptions.map(gender => (
+                      <label key={gender} className="flex items-center">
+                        <input
+                          type="radio"
+                          name="gender"
+                          value={gender}
+                          required
+                          checked={formData.gender === gender}
+                          onChange={(e) => handleInputChange('gender', e.target.value)}
+                          className="mr-2"
+                        />
+                        {gender}
+                      </label>
+                    ))}
                   </div>
                 </div>
 
-                {/* Blood Group */}
-                <div className="bg-orange-50 p-3 rounded">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Blood Group</label>
-                  <select
-                    value={formData.bloodGroup}
-                    onChange={(e) => handleInputChange('bloodGroup', e.target.value)}
-                    className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent"
-                  >
-                    <option value="">Select Blood Group</option>
-                    <option value="A+">A+</option>
-                    <option value="A-">A-</option>
-                    <option value="B+">B+</option>
-                    <option value="B-">B-</option>
-                    <option value="AB+">AB+</option>
-                    <option value="AB-">AB-</option>
-                    <option value="O+">O+</option>
-                    <option value="O-">O-</option>
-                  </select>
-                </div>
-
-                {/* Marital Status */}
-                <div className="bg-orange-50 p-3 rounded">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Marital Status</label>
-                  <select
-                    value={formData.maritalStatus}
-                    onChange={(e) => handleInputChange('maritalStatus', e.target.value)}
-                    className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent"
-                  >
-                    <option value="">Select Marital Status</option>
-                    <option value="Single">Single</option>
-                    <option value="Married">Married</option>
-                    <option value="Divorced">Divorced</option>
-                    <option value="Widowed">Widowed</option>
-                  </select>
-                </div>
-
-                {/* Category */}
-                <div className="bg-orange-50 p-3 rounded">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Category <span className="text-red-500">*</span>
-                  </label>
-                  <select
-                    required
-                    value={formData.category}
-                    onChange={(e) => handleInputChange('category', e.target.value)}
-                    className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent"
-                  >
-                    <option value="">Select Category</option>
-                    <option value="General">General</option>
-                    <option value="OBC">OBC</option>
-                    <option value="SC">SC</option>
-                    <option value="ST">ST</option>
-                    <option value="EWS">EWS</option>
-                  </select>
-                </div>
+                {/* Select Fields */}
+                {personalSelectFields.map(field => renderSelectField(field, field.options, field.placeholder))}
 
                 {/* Aadhaar Number */}
-                <div className="bg-orange-50 p-3 rounded">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Aadhaar Number <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    pattern="[0-9]{12}"
-                    maxLength="12"
-                    value={formData.aadhaarNumber}
-                    onChange={(e) => handleInputChange('aadhaarNumber', e.target.value)}
-                    className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent"
-                    placeholder="12 digit Aadhaar number"
-                  />
-                </div>
+                {renderInputField(
+                  { name: 'aadhaarNumber', label: 'Aadhaar Number', placeholder: '12 digit Aadhaar number' },
+                  true, 'text', '[0-9]{12}', '12'
+                )}
 
-                {/* Mobile 1 */}
-                <div className="bg-orange-50 p-3 rounded">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Mobile Number 1 <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="tel"
-                    required
-                    pattern="[0-9]{10}"
-                    maxLength="10"
-                    value={formData.mobile1}
-                    onChange={(e) => handleInputChange('mobile1', e.target.value)}
-                    className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent"
-                    placeholder="10 digit mobile number"
-                  />
-                </div>
-
-                {/* Mobile 2 */}
-                <div className="bg-orange-50 p-3 rounded">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Mobile Number 2</label>
-                  <input
-                    type="tel"
-                    pattern="[0-9]{10}"
-                    maxLength="10"
-                    value={formData.mobile2}
-                    onChange={(e) => handleInputChange('mobile2', e.target.value)}
-                    className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent"
-                    placeholder="10 digit mobile number"
-                  />
-                </div>
-
-                {/* Mobile 3 */}
-                <div className="bg-orange-50 p-3 rounded">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Mobile Number 3</label>
-                  <input
-                    type="tel"
-                    pattern="[0-9]{10}"
-                    maxLength="10"
-                    value={formData.mobile3}
-                    onChange={(e) => handleInputChange('mobile3', e.target.value)}
-                    className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent"
-                    placeholder="10 digit mobile number"
-                  />
-                </div>
+                {/* Mobile Numbers */}
+                {mobileFields.map(field => (
+                  <div key={field.name} className="bg-orange-50 p-3 rounded">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      {field.label} {field.required && <span className="text-red-500">*</span>}
+                    </label>
+                    <input
+                      type="tel"
+                      required={field.required}
+                      pattern="[0-9]{10}"
+                      maxLength="10"
+                      value={formData[field.name]}
+                      onChange={(e) => handleInputChange(field.name, e.target.value)}
+                      className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent"
+                      placeholder="10 digit mobile number"
+                    />
+                  </div>
+                ))}
 
                 {/* Email Address */}
-                <div className="bg-orange-50 p-3 rounded">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Email Address <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="email"
-                    required
-                    value={formData.emailAddress}
-                    onChange={(e) => handleInputChange('emailAddress', e.target.value)}
-                    className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent"
-                    placeholder="Enter email address"
-                  />
-                </div>
+                {renderInputField(
+                  { name: 'emailAddress', label: 'Email Address', placeholder: 'Enter email address' },
+                  true, 'email'
+                )}
               </div>
             </div>
 
@@ -398,200 +531,84 @@ const Admission = ({ initialData = null, isEdit = false }) => {
               <h2 className="text-xl font-semibold text-gray-800 mb-4 border-b-2 border-orange-200 pb-2">
                 Address Details
               </h2>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Residential Address */}
-                <div className="bg-orange-50 p-3 rounded">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Residential Address <span className="text-red-500">*</span>
-                  </label>
-                  <textarea
-                    required
-                    rows="3"
-                    value={formData.residentialAddress}
-                    onChange={(e) => handleInputChange('residentialAddress', e.target.value)}
-                    className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent"
-                    placeholder="Enter your current residential address"
-                  />
-                </div>
-
-                {/* Permanent Address */}
-                <div className="bg-orange-50 p-3 rounded">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Permanent Address</label>
-                  <textarea
-                    rows="3"
-                    value={formData.permanentAddress}
-                    onChange={(e) => handleInputChange('permanentAddress', e.target.value)}
-                    className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent"
-                    placeholder="Enter your permanent address (if different from residential)"
-                  />
-                </div>
-              </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
-                {/* State */}
-                <div className="bg-orange-50 p-3 rounded">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    State <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.state}
-                    onChange={(e) => handleInputChange('state', e.target.value)}
-                    className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent"
-                    placeholder="Enter state name"
-                  />
-                </div>
+                {/* Rural or urban */}
+                {renderSelectField(
+                  { name: 'area', label: 'Rural/Urban Area', required: true },
+                  areaOptions, 'Select Area'
+                )}
 
-                {/* District */}
-                <div className="bg-orange-50 p-3 rounded">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    District <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.district}
-                    onChange={(e) => handleInputChange('district', e.target.value)}
-                    className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent"
-                    placeholder="Enter district name"
-                  />
-                </div>
-
-                {/* Village Name */}
-                <div className="bg-orange-50 p-3 rounded">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Village Name</label>
-                  <input
-                    type="text"
-                    value={formData.villageName}
-                    onChange={(e) => handleInputChange('villageName', e.target.value)}
-                    className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent"
-                    placeholder="Enter village/town name"
-                  />
-                </div>
-
-                {/* Pin Code */}
-                <div className="bg-orange-50 p-3 rounded">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Pin Code <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    pattern="[0-9]{6}"
-                    maxLength="6"
-                    value={formData.pinCode}
-                    onChange={(e) => handleInputChange('pinCode', e.target.value)}
-                    className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent"
-                    placeholder="6 digit pin code"
-                  />
-                </div>
-
-                {/* Block / Nagar Nigam / Nagar Parishad / Panchayat */}
-                <div className="bg-orange-50 p-3 rounded">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Block / Nagar Nigam / Nagar Parishad / Panchayat</label>
-                  <input
-                    type="text"
-                    value={formData.blockNagarNigam}
-                    onChange={(e) => handleInputChange('blockNagarNigam', e.target.value)}
-                    className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent"
-                    placeholder="Enter block/nagar nigam/nagar parishad/panchayat"
-                  />
-                </div>
-
-                {/* Post Office */}
-                <div className="bg-orange-50 p-3 rounded">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Post Office</label>
-                  <input
-                    type="text"
-                    value={formData.postOffice}
-                    onChange={(e) => handleInputChange('postOffice', e.target.value)}
-                    className="w-full p-2 border border-gray-300 rounded focus:ring-500 outline-none focus:border-transparent"
-                    placeholder="Enter post office name"
-                  />
-                </div>
+                {/* Address Fields */}
+                {addressFields.map(field => (
+                  <div key={field.name} className="bg-orange-50 p-3 rounded">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      {field.label} {field.required && <span className="text-red-500">*</span>}
+                    </label>
+                    <input
+                      type={field.type}
+                      required={field.required}
+                      pattern={field.pattern}
+                      maxLength={field.maxLength}
+                      value={formData[field.name]}
+                      onChange={(e) => handleInputChange(field.name, e.target.value)}
+                      className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent"
+                      placeholder={field.placeholder}
+                    />
+                  </div>
+                ))}
               </div>
             </div>
 
+            {/* Address Textareas */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-0">
+              {addressTextareaFields.map(field => (
+                <div key={field.name} className="bg-orange-50 p-3 rounded">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    {field.label} {field.required && <span className="text-red-500">*</span>}
+                  </label>
+                  <textarea
+                    required={field.required}
+                    rows="3"
+                    value={formData[field.name]}
+                    onChange={(e) => handleInputChange(field.name, e.target.value)}
+                    className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent"
+                    placeholder={field.placeholder}
+                  />
+                </div>
+              ))}
+            </div>
+
             {/* Academic Details */}
-            <div className="mb-8">
+            <div className="mb-8 mt-4">
               <h2 className="text-xl font-semibold text-gray-800 mb-4 border-b-2 border-orange-200 pb-2">
                 Academic Details
               </h2>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Session Year */}
-                <div className="bg-orange-50 p-3 rounded">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Session Year <span className="text-red-500">*</span>
-                  </label>
-                  <select
-                    required
-                    value={formData.sessionYear}
-                    onChange={(e) => handleInputChange('sessionYear', e.target.value)}
-                    className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent"
-                  >
-                    <option value="">Select Session Year</option>
-                    <option value="2024-25">2024-25</option>
-                    <option value="2025-26">2025-26</option>
-                    <option value="2026-27">2026-27</option>
-                  </select>
-                </div>
 
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Course Name */}
-                <div className="bg-orange-50 p-3 rounded">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Course Name <span className="text-red-500">*</span>
-                  </label>
-                  <select
-                    required
-                    value={formData.courseName}
-                    onChange={(e) => handleInputChange('courseName', e.target.value)}
-                    className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent"
-                  >
-                    <option value="">Select Course</option>
-                    <option value="10th">10th</option>
-                    <option value="12th - Science">12th - Science</option>
-                    <option value="12th - Commerce">12th - Commerce</option>
-                    <option value="12th - Arts">12th - Arts</option>
-                    <option value="B.Tech / B.E.">B.Tech / B.E.</option>
-                    <option value="MBBS">MBBS</option>
-                    <option value="B.Pharm">B.Pharm</option>
-                    <option value="BDS">BDS</option>
-                    <option value="B.Sc">B.Sc</option>
-                    <option value="BCA">BCA</option>
-                    <option value="B.Com">B.Com</option>
-                    <option value="BBA">BBA</option>
-                    <option value="CA">CA</option>
-                    <option value="CS">CS</option>
-                    <option value="CMA">CMA</option>
-                    <option value="BHM">BHM</option>
-                    <option value="BA">BA</option>
-                    <option value="BFA">BFA</option>
-                    <option value="Paramedical">Paramedical</option>
-                    <option value="B.Arch">B.Arch</option>
-                    <option value="Other">Other</option>
-                  </select>
-                  
-                  {/* Manual Course Name Input for "Other" option */}
-                  {formData.courseName === 'Other' && (
-                    <div className="mt-3">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Specify Course Name <span className="text-red-500">*</span>
-                      </label>
-                      <input
-                        type="text"
-                        required
-                        value={formData.otherCourseName || ''}
-                        onChange={(e) => handleInputChange('otherCourseName', e.target.value)}
-                        className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent"
-                        placeholder="Enter course name"
-                      />
-                    </div>
-                  )}
-                </div>
+                {renderSelectField(
+                  { name: 'courseName', label: 'Course Name', required: true },
+                  courseOptions, 'Select Course'
+                )}
+
+                {/* Program */}
+                {renderSelectField(
+                  { name: 'studentProgram', label: 'Program', required: true },
+                  programOptions, 'Select Program'
+                )}
+
+                {/* Manual Course Name Input for "Other" option */}
+                {formData.courseName === 'Other' && (
+                  renderSelectField(
+                    { name: 'otherCourseName', label: 'Specify Course Name', required: true },
+                    otherCourseOptions, 'Select Course'
+                  )
+                )}
               </div>
+
+              {/* Academic Sections */}
+              {academicLevels.map(level => renderAcademicSection(level))}
             </div>
 
             {/* Bank Details */}
@@ -599,55 +616,27 @@ const Admission = ({ initialData = null, isEdit = false }) => {
               <h2 className="text-xl font-semibold text-gray-800 mb-4 border-b-2 border-orange-200 pb-2">
                 Bank Details
               </h2>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Bank Name */}
-                <div className="bg-orange-50 p-3 rounded">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Bank Name</label>
-                  <input
-                    type="text"
-                    value={formData.bankName}
-                    onChange={(e) => handleInputChange('bankName', e.target.value)}
-                    className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent"
-                    placeholder="Enter bank name"
-                  />
-                </div>
+                {renderSelectField(
+                  { name: 'bankName', label: 'Bank Name', required: false },
+                  bankOptions, 'Select Bank'
+                )}
 
-                {/* Account Number */}
-                <div className="bg-orange-50 p-3 rounded">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Account Number</label>
-                  <input
-                    type="text"
-                    value={formData.accountNumber}
-                    onChange={(e) => handleInputChange('accountNumber', e.target.value)}
-                    className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent"
-                    placeholder="Enter account number"
-                  />
-                </div>
-
-                {/* Branch Name */}
-                <div className="bg-orange-50 p-3 rounded">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Branch Name</label>
-                  <input
-                    type="text"
-                    value={formData.branchName}
-                    onChange={(e) => handleInputChange('branchName', e.target.value)}
-                    className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent"
-                    placeholder="Enter branch name"
-                  />
-                </div>
-
-                {/* IFSC Code */}
-                <div className="bg-orange-50 p-3 rounded">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">IFSC Code</label>
-                  <input
-                    type="text"
-                    value={formData.ifscCode}
-                    onChange={(e) => handleInputChange('ifscCode', e.target.value)}
-                    className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent"
-                    placeholder="Enter IFSC code"
-                  />
-                </div>
+                {/* Bank Fields */}
+                {bankDetailFields.map(field => (
+                  <div key={field.name} className="bg-orange-50 p-3 rounded">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">{field.label}</label>
+                    <input
+                      type="text"
+                      value={formData[field.name]}
+                      onChange={(e) => handleInputChange(field.name, e.target.value)}
+                      className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent"
+                      placeholder={field.placeholder}
+                    />
+                  </div>
+                ))}
               </div>
             </div>
 
@@ -656,36 +645,28 @@ const Admission = ({ initialData = null, isEdit = false }) => {
               <h2 className="text-xl font-semibold text-gray-800 mb-4 border-b-2 border-orange-200 pb-2">
                 Documents & Attachments
               </h2>
-              
-              {/* Certificate Requirements Info */}
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-                <h3 className="text-sm font-medium text-blue-800 mb-2">📋 Certificate Requirements:</h3>
-                <ul className="text-sm text-blue-700 space-y-1">
-                  <li>• <strong>10th Course:</strong> No certificates required</li>
-                  <li>• <strong>12th Courses:</strong> 10th certificate required</li>
-                  <li>• <strong>Other Courses:</strong> Both 10th and 12th certificates required</li>
-                </ul>
-              </div>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Student Image */}
-                <div className="bg-orange-50 p-3 rounded">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Student Image <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="file"
-                    required
-                    accept="image/*"
-                    className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent"
-                  />
-                </div>
-
-                {/* 10th Certificate - Required for 12th and other courses, not for 10th */}
-                {formData.courseName && formData.courseName !== '10th' && (
-                  <div className="bg-orange-50 p-3 rounded">
+                {/* Document Fields */}
+                {documentFields.map(field => (
+                  <div key={field.name} className="bg-orange-50 p-3 rounded">
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      10th Certificate <span className="text-red-500">*</span>
+                      {field.label} {field.required && <span className="text-red-500">*</span>}
+                    </label>
+                    <input
+                      type="file"
+                      required={field.required}
+                      accept={field.accept}
+                      className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent"
+                    />
+                  </div>
+                ))}
+
+                {/* Conditional Certificates */}
+                {conditionalCertificates.map((cert, index) => cert.show(formData.courseName) && (
+                  <div key={index} className="bg-orange-50 p-3 rounded">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      {cert.label} <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="file"
@@ -694,44 +675,25 @@ const Admission = ({ initialData = null, isEdit = false }) => {
                       className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent"
                     />
                   </div>
-                )}
+                ))}
 
-                {/* 12th Certificate - Required for courses other than 10th and 12th */}
-                {formData.courseName && formData.courseName !== '10th' && !formData.courseName.startsWith('12th') && (
-                  <div className="bg-orange-50 p-3 rounded">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      12th Certificate <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="file"
-                      required
-                      accept=".pdf,.jpg,.jpeg,.png"
-                      className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent"
-                    />
-                  </div>
-                )}
-
-                {/* Counselor Signature */}
+                {/* Password Field */}
                 <div className="bg-orange-50 p-3 rounded">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Counselor Signature</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
                   <input
-                    type="file"
-                    accept=".pdf,.jpg,.jpeg,.png"
+                    type="text"
+                    value={formData.ifscCode}
+                    onChange={(e) => handleInputChange('ifscCode', e.target.value)}
                     className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent"
-                  />
-                </div>
-
-                {/* Applicant Signature */}
-                <div className="bg-orange-50 p-3 rounded">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Applicant Signature</label>
-                  <input
-                    type="file"
-                    accept=".pdf,.jpg,.jpeg,.png"
-                    className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent"
+                    placeholder="Enter password"
                   />
                 </div>
               </div>
             </div>
+
+            {/* Office Use Only - Conditional Rendering */}
+            {formData.studentProgram === 'KYP' && renderOfficeUseOnly(officeUseOnlyFields, 'Office Use Only', 'remarks')}
+            {formData.studentProgram === 'SHA' && renderOfficeUseOnly(officeUseOnly2Fields, 'Office Use Only', 'remarks2')}
 
             {/* Submit Button */}
             <div className="flex justify-end space-x-4">
