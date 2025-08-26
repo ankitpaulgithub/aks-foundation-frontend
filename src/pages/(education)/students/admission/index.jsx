@@ -1,8 +1,11 @@
 "use client"
 import React, { useState, useEffect } from 'react'
 import Layout from '../../../../components/education/Layout'
+import axios from 'axios'
 
 const Admission = ({ initialData = null, isEdit = false }) => {
+  const [stateData, setStateData] = useState({})
+  const [districtData, setDistrictData] = useState({})
   // Configuration objects for form fields
   const bloodGroupOptions = [
     { value: 'A+', label: 'A+' }, { value: 'A-', label: 'A-' },
@@ -96,8 +99,6 @@ const Admission = ({ initialData = null, isEdit = false }) => {
   ]
 
   const addressFields = [
-    { name: 'state', label: 'State', required: true, type: 'text', placeholder: 'Enter state name' },
-    { name: 'district', label: 'District', required: true, type: 'text', placeholder: 'Enter district name' },
     { name: 'villageName', label: 'Village Name', required: false, type: 'text', placeholder: 'Enter village/town name' },
     { name: 'pinCode', label: 'Pin Code', required: true, type: 'text', placeholder: '6 digit pin code', pattern: '[0-9]{6}', maxLength: '6' },
     { name: 'blockNagarNigam', label: 'Block / Nagar Nigam / Nagar Parishad / Panchayat', required: false, type: 'text', placeholder: 'Enter block/nagar nigam/nagar parishad/panchayat' },
@@ -129,37 +130,45 @@ const Admission = ({ initialData = null, isEdit = false }) => {
   ]
 
   const conditionalCertificates = [
-    { 
+    {
       show: (courseName) => courseName && courseName !== '10th',
       label: '10th Certificate'
     },
-    { 
+    {
       show: (courseName) => courseName && courseName !== '10th' && !courseName.startsWith('12th'),
       label: '12th Certificate'
     }
   ]
 
   const academicLevels = [
-    { key: 'class10', title: 'Class 10th Information', alwaysRequired: true, fields: [
-      { name: 'class10SessionYear', label: 'Session Year', placeholder: 'e.g., 2020-2021' },
-      { name: 'class10RollNo', label: 'Roll No.', placeholder: 'e.g., 0000000' },
-      { name: 'class10SchoolName', label: 'School Name', placeholder: 'School name' }
-    ]},
-    { key: 'class12', title: 'Class 12th Information', requiredFor: ['12th', 'Graduation', 'Post Graduation'], fields: [
-      { name: 'class12SessionYear', label: 'Session Year', placeholder: 'e.g., 2022-2023' },
-      { name: 'class12RollNo', label: 'Roll No.', placeholder: 'e.g., 0000000' },
-      { name: 'class12SchoolName', label: 'School Name', placeholder: 'School name' }
-    ]},
-    { key: 'graduation', title: 'Graduation Information', requiredFor: ['Graduation', 'Post Graduation'], fields: [
-      { name: 'graduationSessionYear', label: 'Session Year', placeholder: 'e.g., 2021-2025' },
-      { name: 'graduationRollNo', label: 'Roll No.', placeholder: 'e.g., 0000000' },
-      { name: 'graduationSchoolName', label: 'College/University Name', placeholder: 'College/University name' }
-    ]},
-    { key: 'postGraduation', title: 'Post Graduation Information', requiredFor: ['Post Graduation'], fields: [
-      { name: 'postGraduationSessionYear', label: 'Session Year', placeholder: 'e.g., 2025-2027' },
-      { name: 'postGraduationRollNo', label: 'Roll No.', placeholder: 'e.g., 0000000' },
-      { name: 'postGraduationSchoolName', label: 'College/University Name', placeholder: 'College/University name' }
-    ]}
+    {
+      key: 'class10', title: 'Class 10th Information', alwaysRequired: true, fields: [
+        { name: 'class10SessionYear', label: 'Session Year', placeholder: 'e.g., 2020-2021' },
+        { name: 'class10RollNo', label: 'Roll No.', placeholder: 'e.g., 0000000' },
+        { name: 'class10SchoolName', label: 'School Name', placeholder: 'School name' }
+      ]
+    },
+    {
+      key: 'class12', title: 'Class 12th Information', requiredFor: ['12th', 'Graduation', 'Post Graduation'], fields: [
+        { name: 'class12SessionYear', label: 'Session Year', placeholder: 'e.g., 2022-2023' },
+        { name: 'class12RollNo', label: 'Roll No.', placeholder: 'e.g., 0000000' },
+        { name: 'class12SchoolName', label: 'School Name', placeholder: 'School name' }
+      ]
+    },
+    {
+      key: 'graduation', title: 'Graduation Information', requiredFor: ['Graduation', 'Post Graduation'], fields: [
+        { name: 'graduationSessionYear', label: 'Session Year', placeholder: 'e.g., 2021-2025' },
+        { name: 'graduationRollNo', label: 'Roll No.', placeholder: 'e.g., 0000000' },
+        { name: 'graduationSchoolName', label: 'College/University Name', placeholder: 'College/University name' }
+      ]
+    },
+    {
+      key: 'postGraduation', title: 'Post Graduation Information', requiredFor: ['Post Graduation'], fields: [
+        { name: 'postGraduationSessionYear', label: 'Session Year', placeholder: 'e.g., 2025-2027' },
+        { name: 'postGraduationRollNo', label: 'Roll No.', placeholder: 'e.g., 0000000' },
+        { name: 'postGraduationSchoolName', label: 'College/University Name', placeholder: 'College/University name' }
+      ]
+    }
   ]
 
   const officeUseOnlyFields = [
@@ -229,7 +238,34 @@ const Admission = ({ initialData = null, isEdit = false }) => {
   }
 
   const [formData, setFormData] = useState(initialData || defaultFormData)
+  const fetchDistrictData = async (stateName) => {
+    try {
+      const response = await axios.post('https://countriesnow.space/api/v0.1/countries/state/cities', {
+        country: 'India',
+        state: stateName
+    })
+      setDistrictData(response?.data)
+    } catch (error) {
+      console.error('Failed to fetch states', error)
+    }
+  }
 
+  useEffect(() => {
+    const fetchStateData = async () => {
+      try {
+        const response = await axios.post('https://countriesnow.space/api/v0.1/countries/states', {
+          country: 'India'
+        })
+        setStateData(response.data)
+      } catch (error) {
+        console.error('Failed to fetch states', error)
+      }
+    }
+
+    fetchStateData();
+
+  }, [])
+console.log(districtData,'khkhj')
   useEffect(() => {
     if (initialData) setFormData(initialData)
   }, [initialData])
@@ -286,7 +322,7 @@ const Admission = ({ initialData = null, isEdit = false }) => {
 
   // Helper function to render academic section
   const renderAcademicSection = (level) => {
-    const shouldShow = level.alwaysRequired || 
+    const shouldShow = level.alwaysRequired ||
       (level.requiredFor && level.requiredFor.includes(formData.courseName))
 
     if (!shouldShow) return null
@@ -409,11 +445,19 @@ const Admission = ({ initialData = null, isEdit = false }) => {
       alert('Please fix the following errors:\n' + validationErrors.join('\n'))
       return
     }
-    
+
     if (isEdit) {
       console.log('Student updated:', formData)
     } else {
       console.log('New student admission:', formData)
+    }
+
+    try {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('admissionForm', JSON.stringify(formData))
+      }
+    } catch (err) {
+      console.error('Failed to persist admission form to localStorage', err)
     }
   }
 
@@ -540,6 +584,49 @@ const Admission = ({ initialData = null, isEdit = false }) => {
                 )}
 
                 {/* Address Fields */}
+                <div className="bg-orange-50 p-3 rounded">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    State  <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    required
+                    value={formData.state}
+                    onChange={(e) => {
+                      const selectedState = e.target.value
+                      handleInputChange('state', selectedState)
+                      handleInputChange('district', '')
+                      if (selectedState) {
+                        fetchDistrictData(selectedState)
+                      } else {
+                        setDistrictData({})
+                      }
+                    }}
+                    className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent"
+                  >
+                    <option value="">Select State</option>
+                    {stateData && stateData?.data?.states && stateData?.data?.states?.length > 0 && stateData?.data?.states?.map((item) => (
+                      <option key={item.name} value={item.name}>{item.name}</option>)
+                    )}
+                  </select>
+                </div>
+
+                <div className="bg-orange-50 p-3 rounded">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    District  <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    required
+                    value={formData.district}
+                    onChange={(e) => handleInputChange('district', e.target.value)}
+                    className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent"
+                  >
+                    <option value="">Select District</option>
+                    {districtData && districtData?.data && districtData?.data?.length > 0 && districtData?.data?.map((item) => (
+                      <option key={item} value={item}>{item}</option>)
+                    )}
+                  </select>
+                </div>
+
                 {addressFields.map(field => (
                   <div key={field.name} className="bg-orange-50 p-3 rounded">
                     <label className="block text-sm font-medium text-gray-700 mb-1">

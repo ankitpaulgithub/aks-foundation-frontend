@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import Layout from '../../../../components/education/Layout'
 import { FaUser, FaMapMarkerAlt,  FaCertificate,  FaIdCard, FaEdit, FaPrint } from 'react-icons/fa'
 import { useRouter } from 'next/navigation'
@@ -6,57 +6,99 @@ import { useRouter } from 'next/navigation'
 const StudentDetails = () => {
 
     const router = useRouter()
-  // Sample student data - in real app, this would come from props or API
-  const studentData = {
-    // Student Personal Details
-    name: 'RAMESH KUMAR',
-    class: 'Nursery',
-    section: 'A',
-    transport: 'BUS | Rs. 500',
-    address1: '123 Main Street',
-    address2: 'Apartment 4B',
-    city: 'New Delhi',
-    mobile: '9554833028',
-    gender: 'Boy',
-    dateOfBirth: '2018-10-10',
-    religion: 'Hindu',
-    sc: 'Sc',
-    kumar: 'KUMAR',
-    vehicle: 'Tata Bus',
-    admissionDate: '2025-01-30',
-    registrationNo: '1002445',
-    session: '2024-25',
-    
-    // Received Documents
-    tc: 'Yes',
-    characterCertificate: 'Yes',
-    reportCard: 'Yes',
-    dobCertificate: 'Yes',
-    
-    // Previous School Details
-    lastSchool: 'ABC Public School',
-    lastExam: 'Class UKG Final',
-    examResult: 'Distinction',
-    mark: '95%',
-    board: 'CBSE',
-    aadharNo: '1234-5678-9012',
-    
-    // Father Details
-    fatherName: 'RAJESH KUMAR',
-    fatherMobile: '9876543210',
-    fatherQualification: 'B.Tech',
-    fatherOccupation: 'Software Engineer',
-    fatherDOB: '1985-05-15',
-    fatherEmail: 'rajesh.kumar@email.com',
-    
-    // Mother Details
-    motherName: 'PRIYA KUMARI',
-    motherMobile: '8765432109',
-    motherQualification: 'M.A.',
-    motherOccupation: 'Teacher',
-    motherDOB: '1988-08-20',
-    oldBalance: '0'
-  }
+  const [admission, setAdmission] = useState(null)
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    try {
+      const raw = localStorage.getItem('admissionForm')
+      if (raw) setAdmission(JSON.parse(raw))
+    } catch (err) {
+      console.error('Failed to read admissionForm from localStorage', err)
+    }
+  }, [])
+
+  const studentData = useMemo(() => {
+    const a = admission || {}
+    const fullName = [a.firstName, a.middleName, a.lastName].filter(Boolean).join(' ')
+    return {
+      name: fullName || 'Not provided',
+      class: a.courseName || 'Not provided',
+      section: a.batch || 'Not provided',
+      address1: a.residentialAddress || 'Not provided',
+      address2: a.permanentAddress || 'Not provided',
+      city: a.district || 'Not provided',
+      mobile: a.mobile1 || 'Not provided',
+      gender: a.gender || 'Not provided',
+      dateOfBirth: a.dateOfBirth || '',
+      sc: a.category || 'Not provided',
+      emailAddress: a.emailAddress || 'Not provided',
+      bloodGroup: a.bloodGroup || 'Not provided',
+      maritalStatus: a.maritalStatus || 'Not provided',
+      admissionDate: a.regDate || '',
+      registrationNo: a.regNo || 'Not provided',
+      session: a.sessionYear || 'Not provided',
+
+      // Address
+      area: a.area || 'Not provided',
+      state: a.state || 'Not provided',
+      district: a.district || 'Not provided',
+      villageName: a.villageName || 'Not provided',
+      pinCode: a.pinCode || 'Not provided',
+      blockNagarNigam: a.blockNagarNigam || 'Not provided',
+      postOffice: a.postOffice || 'Not provided',
+
+      // Academics & Program
+      courseName: a.courseName || 'Not provided',
+      otherCourseName: a.otherCourseName || '',
+      studentProgram: a.studentProgram || 'Not provided',
+      class10SessionYear: a.class10SessionYear || '',
+      class10RollNo: a.class10RollNo || '',
+      class10SchoolName: a.class10SchoolName || '',
+      class12SessionYear: a.class12SessionYear || '',
+      class12RollNo: a.class12RollNo || '',
+      class12SchoolName: a.class12SchoolName || '',
+      graduationSessionYear: a.graduationSessionYear || '',
+      graduationRollNo: a.graduationRollNo || '',
+      graduationSchoolName: a.graduationSchoolName || '',
+      postGraduationSessionYear: a.postGraduationSessionYear || '',
+      postGraduationRollNo: a.postGraduationRollNo || '',
+      postGraduationSchoolName: a.postGraduationSchoolName || '',
+
+      // Bank
+      bankName: a.bankName || 'Not provided',
+      accountNumber: a.accountNumber || 'Not provided',
+      branchName: a.branchName || 'Not provided',
+      ifscCode: a.ifscCode || 'Not provided',
+
+      // Office Use Only (KYP)
+      payment: a.payment || '',
+      paymentDate: a.paymentDate || '',
+      drccVerificationDate: a.drccVerificationDate || '',
+      learnerCode: a.learnerCode || '',
+      batchStartDate: a.batchStartDate || '',
+      batchCode: a.batchCode || '',
+      batchTime1: a.batchTime1 || '',
+      batchTime2: a.batchTime2 || '',
+      remarks: a.remarks || '',
+
+      // Office Use Only (SHA)
+      enrollmentNo: a.enrollmentNo || '',
+      enrollmentDate: a.enrollmentDate || '',
+      program2: a.program2 || '',
+      courseDuration: a.courseDuration || '',
+      batchName: a.batchName || '',
+      batchTime: a.batchTime || '',
+      certificateNo: a.certificateNo || '',
+      dateOfIssue: a.dateOfIssue || '',
+      remarks2: a.remarks2 || '',
+
+      aadharNo: a.aadhaarNumber || 'Not provided',
+
+      fatherName: a.fatherName || 'Not provided',
+      motherName: a.motherName || 'Not provided'
+    }
+  }, [admission])
 
   const handleEdit = (data)=>{
     localStorage.setItem("student",JSON.stringify(data))
@@ -73,7 +115,11 @@ const StudentDetails = () => {
   }
 
   const getGenderColor = (gender) => {
-    return gender === 'Boy' ? 'bg-blue-100 text-blue-800' : 'bg-pink-100 text-pink-800';
+    if (!gender) return 'bg-gray-100 text-gray-800'
+    const g = String(gender).toLowerCase()
+    if (g === 'boy' || g === 'male') return 'bg-blue-100 text-blue-800'
+    if (g === 'girl' || g === 'female') return 'bg-pink-100 text-pink-800'
+    return 'bg-gray-100 text-gray-800'
   }
 
   const getDocumentStatusColor = (status) => {
@@ -211,11 +257,11 @@ const StudentDetails = () => {
             </div>
           </div>
 
-          {/* Address & Transport Information */}
+          {/* Address & Bank Information */}
           <div className="bg-white rounded-lg shadow-md p-6 mb-6">
             <h2 className="text-xl font-semibold text-gray-800 mb-4 border-b-2 border-green-200 pb-2 flex items-center gap-2">
               <FaMapMarkerAlt className="text-green-500" />
-              Address & Transport
+              Address & Bank
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
@@ -236,73 +282,180 @@ const StudentDetails = () => {
                 </div>
               </div>
               <div>
-                <h3 className="text-lg font-medium text-gray-700 mb-3">Transport Details</h3>
+                <h3 className="text-lg font-medium text-gray-700 mb-3">Bank Details</h3>
                 <div className="space-y-2">
                   <div>
-                    <label className="block text-sm font-medium text-gray-600">Transport Service</label>
-                    <p className="text-gray-800">{studentData.transport}</p>
+                    <label className="block text-sm font-medium text-gray-600">Bank Name</label>
+                    <p className="text-gray-800">{studentData.bankName}</p>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-600">Vehicle Type</label>
-                    <p className="text-gray-800">{studentData.vehicle}</p>
+                    <label className="block text-sm font-medium text-gray-600">Account Number</label>
+                    <p className="text-gray-800">{studentData.accountNumber}</p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-600">Branch Name</label>
+                    <p className="text-gray-800">{studentData.branchName}</p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-600">IFSC Code</label>
+                    <p className="text-gray-800">{studentData.ifscCode}</p>
                   </div>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Documents & Previous School */}
+          {/* Academic & Office Use */}
           <div className="bg-white rounded-lg shadow-md p-6 mb-6">
             <h2 className="text-xl font-semibold text-gray-800 mb-4 border-b-2 border-purple-200 pb-2 flex items-center gap-2">
               <FaCertificate className="text-purple-500" />
-              Documents & Previous School
+              Academic & Office Use
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <h3 className="text-lg font-medium text-gray-700 mb-3">Received Documents</h3>
+                <h3 className="text-lg font-medium text-gray-700 mb-3">Academic Details</h3>
                 <div className="space-y-2">
-                  {[
-                    { key: 'tc', label: 'Transfer Certificate' },
-                    { key: 'characterCertificate', label: 'Character Certificate' },
-                    { key: 'reportCard', label: 'Report Card' },
-                    { key: 'dobCertificate', label: 'Date of Birth Certificate' }
-                  ].map((doc) => (
-                    <div key={doc.key} className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600">{doc.label}</span>
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getDocumentStatusColor(studentData[doc.key])}`}>
-                        {studentData[doc.key]}
-                      </span>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-600">Course Name</label>
+                    <p className="text-gray-800">{studentData.courseName}</p>
+                  </div>
+                  {studentData.otherCourseName && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-600">Other Course Name</label>
+                      <p className="text-gray-800">{studentData.otherCourseName}</p>
                     </div>
-                  ))}
+                  )}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-600">Program</label>
+                    <p className="text-gray-800">{studentData.studentProgram}</p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-600">Class 10th</label>
+                    <p className="text-gray-800">{studentData.class10SessionYear} {studentData.class10RollNo && `| Roll: ${studentData.class10RollNo}`} {studentData.class10SchoolName && `| ${studentData.class10SchoolName}`}</p>
+                  </div>
+                  {studentData.class12SessionYear || studentData.class12RollNo || studentData.class12SchoolName ? (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-600">Class 12th</label>
+                      <p className="text-gray-800">{studentData.class12SessionYear} {studentData.class12RollNo && `| Roll: ${studentData.class12RollNo}`} {studentData.class12SchoolName && `| ${studentData.class12SchoolName}`}</p>
+                    </div>
+                  ) : null}
+                  {studentData.graduationSessionYear || studentData.graduationRollNo || studentData.graduationSchoolName ? (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-600">Graduation</label>
+                      <p className="text-gray-800">{studentData.graduationSessionYear} {studentData.graduationRollNo && `| Roll: ${studentData.graduationRollNo}`} {studentData.graduationSchoolName && `| ${studentData.graduationSchoolName}`}</p>
+                    </div>
+                  ) : null}
+                  {studentData.postGraduationSessionYear || studentData.postGraduationRollNo || studentData.postGraduationSchoolName ? (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-600">Post Graduation</label>
+                      <p className="text-gray-800">{studentData.postGraduationSessionYear} {studentData.postGraduationRollNo && `| Roll: ${studentData.postGraduationRollNo}`} {studentData.postGraduationSchoolName && `| ${studentData.postGraduationSchoolName}`}</p>
+                    </div>
+                  ) : null}
                 </div>
               </div>
               <div>
-                <h3 className="text-lg font-medium text-gray-700 mb-3">Previous School Details</h3>
+                <h3 className="text-lg font-medium text-gray-700 mb-3">Office Use Only</h3>
                 <div className="space-y-2">
                   <div>
-                    <label className="block text-sm font-medium text-gray-600">Last School</label>
-                    <p className="text-gray-800">{studentData.lastSchool}</p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-600">Last Exam</label>
-                    <p className="text-gray-800">{studentData.lastExam}</p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-600">Exam Result</label>
-                    <p className="text-gray-800">{studentData.examResult}</p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-600">Marks</label>
-                    <p className="text-gray-800">{studentData.mark}</p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-600">Board</label>
-                    <p className="text-gray-800">{studentData.board}</p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-600">Aadhar Number</label>
+                    <label className="block text-sm font-medium text-gray-600">Aadhaar Number</label>
                     <p className="text-gray-800">{studentData.aadharNo}</p>
                   </div>
+                  {studentData.payment && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-600">Payment</label>
+                      <p className="text-gray-800">{studentData.payment}</p>
+                    </div>
+                  )}
+                  {studentData.paymentDate && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-600">Payment Date</label>
+                      <p className="text-gray-800">{formatDate(studentData.paymentDate)}</p>
+                    </div>
+                  )}
+                  {studentData.drccVerificationDate && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-600">DRCC Verification Date</label>
+                      <p className="text-gray-800">{formatDate(studentData.drccVerificationDate)}</p>
+                    </div>
+                  )}
+                  {studentData.learnerCode && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-600">Learner Code</label>
+                      <p className="text-gray-800">{studentData.learnerCode}</p>
+                    </div>
+                  )}
+                  {studentData.batchStartDate && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-600">Batch Start Date</label>
+                      <p className="text-gray-800">{formatDate(studentData.batchStartDate)}</p>
+                    </div>
+                  )}
+                  {studentData.batch && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-600">Batch</label>
+                      <p className="text-gray-800">{studentData.batch}</p>
+                    </div>
+                  )}
+                  {studentData.batchCode && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-600">Batch Code</label>
+                      <p className="text-gray-800">{studentData.batchCode}</p>
+                    </div>
+                  )}
+                  {(studentData.batchTime1 || studentData.batchTime2) && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-600">Batch Times</label>
+                      <p className="text-gray-800">{[studentData.batchTime1, studentData.batchTime2].filter(Boolean).join(' - ')}</p>
+                    </div>
+                  )}
+                  {studentData.enrollmentNo && (
+                    <div>
+                      <label className="block text sm font-medium text-gray-600">Enrollment No.</label>
+                      <p className="text-gray-800">{studentData.enrollmentNo}</p>
+                    </div>
+                  )}
+                  {studentData.enrollmentDate && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-600">Enrollment Date</label>
+                      <p className="text-gray-800">{formatDate(studentData.enrollmentDate)}</p>
+                    </div>
+                  )}
+                  {studentData.program2 && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-600">Program</label>
+                      <p className="text-gray-800">{studentData.program2}</p>
+                    </div>
+                  )}
+                  {studentData.courseDuration && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-600">Course Duration</label>
+                      <p className="text-gray-800">{studentData.courseDuration}</p>
+                    </div>
+                  )}
+                  {studentData.batchName && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-600">Batch Name</label>
+                      <p className="text-gray-800">{studentData.batchName}</p>
+                    </div>
+                  )}
+                  {studentData.batchTime && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-600">Batch Time</label>
+                      <p className="text-gray-800">{studentData.batchTime}</p>
+                    </div>
+                  )}
+                  {studentData.certificateNo && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-600">Certificate No.</label>
+                      <p className="text-gray-800">{studentData.certificateNo}</p>
+                    </div>
+                  )}
+                  {studentData.dateOfIssue && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-600">Date of Issue</label>
+                      <p className="text-gray-800">{formatDate(studentData.dateOfIssue)}</p>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -323,26 +476,6 @@ const StudentDetails = () => {
                     <label className="block text-sm font-medium text-gray-600">Name</label>
                     <p className="text-gray-800">{studentData.fatherName}</p>
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-600">Mobile</label>
-                    <p className="text-gray-800">{studentData.fatherMobile}</p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-600">Qualification</label>
-                    <p className="text-gray-800">{studentData.fatherQualification}</p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-600">Occupation</label>
-                    <p className="text-gray-800">{studentData.fatherOccupation}</p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-600">Date of Birth</label>
-                    <p className="text-gray-800">{formatDate(studentData.fatherDOB)}</p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-600">Email</label>
-                    <p className="text-gray-800">{studentData.fatherEmail}</p>
-                  </div>
                 </div>
               </div>
 
@@ -353,26 +486,6 @@ const StudentDetails = () => {
                   <div>
                     <label className="block text-sm font-medium text-gray-600">Name</label>
                     <p className="text-gray-800">{studentData.motherName}</p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-600">Mobile</label>
-                    <p className="text-gray-800">{studentData.motherMobile}</p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-600">Qualification</label>
-                    <p className="text-gray-800">{studentData.motherQualification}</p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-600">Occupation</label>
-                    <p className="text-gray-800">{studentData.motherOccupation}</p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-600">Date of Birth</label>
-                    <p className="text-gray-800">{formatDate(studentData.motherDOB)}</p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-600">Previous Balance</label>
-                    <p className="text-gray-800">₹ {studentData.oldBalance}</p>
                   </div>
                 </div>
               </div>
@@ -391,8 +504,8 @@ const StudentDetails = () => {
                 <p className="text-gray-800">{formatDate(studentData.admissionDate)}</p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-600">Kumar</label>
-                <p className="text-gray-800">{studentData.kumar}</p>
+                <label className="block text-sm font-medium text-gray-600">Batch</label>
+                <p className="text-gray-800">{studentData.batch}</p>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-600">Status</label>
