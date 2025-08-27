@@ -265,7 +265,6 @@ const Admission = ({ initialData = null, isEdit = false }) => {
     fetchStateData();
 
   }, [])
-console.log(districtData,'khkhj')
   useEffect(() => {
     if (initialData) setFormData(initialData)
   }, [initialData])

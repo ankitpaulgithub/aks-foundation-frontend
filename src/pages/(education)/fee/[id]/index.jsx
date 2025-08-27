@@ -146,38 +146,21 @@ const FeeReceiptPage = () => {
                                 Basic Information
                             </h2>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-600">Full Name</label>
-                                    <p className="text-lg font-semibold text-gray-800">Rajesh Kumar</p>
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-600">Class & Section</label>
-                                    <p className="text-lg font-semibold text-gray-800">Nursery - A</p>
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-600">Registration Number</label>
-                                    <p className="text-lg font-semibold text-gray-800">1002445</p>
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-600">Session</label>
-                                    <p className="text-lg font-semibold text-gray-800">2024-25</p>
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-600">Date of Birth</label>
-                                    <p className="text-lg font-semibold text-gray-800">10 October 2018</p>
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-600">Mobile Number</label>
-                                    <p className="text-lg font-semibold text-gray-800">9554833028</p>
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-600">Father's Name</label>
-                                    <p className="text-lg font-semibold text-gray-800">RAJESH KUMAR</p>
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-600">Mother's Details</label>
-                                    <p className="text-lg font-semibold text-gray-800">Priya</p>
-                                </div>
+                                {[
+                                    { label: 'Full Name', value: 'Rajesh Kumar' },
+                                    { label: 'Course Name', value: '12th' },
+                                    { label: 'Registration Number', value: '1002445' },
+                                    { label: 'Session', value: '2024-25' },
+                                    { label: 'Date of Birth', value: '10 October 2018' },
+                                    { label: 'Mobile Number', value: '9554833028' },
+                                    { label: 'Father\'s Name', value: 'RAJESH KUMAR' },
+                                    { label: 'Mother\'s Details', value: 'Priya' }
+                                ].map((field, index) => (
+                                    <div key={index}>
+                                        <label className="block text-sm font-medium text-gray-600">{field.label}</label>
+                                        <p className="text-lg font-semibold text-gray-800">{field.value}</p>
+                                    </div>
+                                ))}
                             </div>
                         </div>
                     </div>

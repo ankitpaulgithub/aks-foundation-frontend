@@ -24,7 +24,7 @@ const Sidebar = () => {
     const pathname = usePathname();
     const router = useRouter();
     const path = pathname;
-    console.log(path);
+    // console.log(path);
     const fee = [
         {
             icon: <IoWalletOutline size={20} className={`text-[#d96302]`} />,
