@@ -32,7 +32,11 @@ const LoginPage = () => {
         router.push('/(library)/dashboard');
         setSubmitting(false);
       }
-      else {}
+      else if(values.role === 'Consultancy'){
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        router.push('/(consultancy)/dashboard');
+        setSubmitting(false);
+      }
       // You can handle login logic here
       // alert(JSON.stringify(values, null, 2));
     },
@@ -105,6 +109,7 @@ const LoginPage = () => {
               <option value="Education">Education</option>
               <option value="Library">Library</option>
               <option value="Construction">Construction</option>
+              <option value="Consultancy">Consultancy</option>
             </select>
             {formik.touched.role && formik.errors.role && (
               <div className="text-xs text-red-500 mt-1 ml-2">{formik.errors.role}</div>
