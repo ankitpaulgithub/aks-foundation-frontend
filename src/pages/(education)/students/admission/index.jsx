@@ -2,136 +2,18 @@
 import React, { useState, useEffect } from 'react'
 import Layout from '../../../../components/education/Layout'
 import axios from 'axios'
+import { bankOptions , documentFields, occupationOptions, areaOptions, bloodGroupOptions, categoryOptions , maritalStatusOptions, addressFields, personalDetailsFields, officeUseOnly2Fields, officeUseOnlyFields,bankDetailFields,courseOptions, genderOptions, mobileFields, otherCourseOptions, programOptions } from '../../../../constants/BankOptions'
+import { StatesAndDistrict } from '../../../../constants/StatesAndDistrict'
+import { studentapi } from '../../../../mocks/student'
+
 
 const Admission = ({ initialData = null, isEdit = false }) => {
   const [stateData, setStateData] = useState({})
   const [districtData, setDistrictData] = useState({})
-  // Configuration objects for form fields
-  const bloodGroupOptions = [
-    { value: 'A+', label: 'A+' }, { value: 'A-', label: 'A-' },
-    { value: 'B+', label: 'B+' }, { value: 'B-', label: 'B-' },
-    { value: 'AB+', label: 'AB+' }, { value: 'AB-', label: 'AB-' },
-    { value: 'O+', label: 'O+' }, { value: 'O-', label: 'O-' }
-  ]
 
-  const maritalStatusOptions = [
-    { value: 'Single', label: 'Single' }, { value: 'Married', label: 'Married' },
-    { value: 'Divorced', label: 'Divorced' }, { value: 'Widowed', label: 'Widowed' }
-  ]
+  const batchMonths = [ 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'June', 'July', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec' ]
+  const batchYears = [ 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026, 2027, 2028, 2029, 2030 ]
 
-  const categoryOptions = [
-    { value: 'General', label: 'General' }, { value: 'OBC', label: 'OBC' },
-    { value: 'EBC', label: 'EBC' }, { value: 'SC', label: 'SC' },
-    { value: 'ST', label: 'ST' }, { value: 'EWS', label: 'EWS' }
-  ]
-
-  const areaOptions = [
-    { value: 'Rural', label: 'Rural' }, { value: 'Urban', label: 'Urban' }
-  ]
-
-  const genderOptions = ['Male', 'Female', 'Other']
-
-  const occupationOptions = [
-    { value: 'Farmer', label: 'Farmer - किसान' },
-    { value: 'Business', label: 'Business' },
-    { value: 'Government Employee', label: 'Government Employee' },
-    { value: 'Private Employee', label: 'Private Employee' },
-    { value: 'Teacher', label: 'Teacher' },
-    { value: 'Doctor', label: 'Doctor' },
-    { value: 'Engineer', label: 'Engineer' },
-    { value: 'Lawyer', label: 'Lawyer' },
-    { value: 'Self Employed', label: 'Self Employed' },
-    { value: 'Retired', label: 'Retired' },
-    { value: 'Unemployed', label: 'Unemployed' },
-    { value: 'Other', label: 'Other' }
-  ]
-
-  const courseOptions = [
-    { value: '10th', label: '10th' }, { value: '12th', label: '12th' },
-    { value: 'Graduation', label: 'Graduation' }, { value: 'Post Graduation', label: 'Post Graduation' }
-  ]
-
-  const otherCourseOptions = [
-    { value: 'DCA', label: 'DCA' }, { value: 'ADCA', label: 'ADCA' }
-  ]
-
-  const programOptions = [
-    { value: 'KYP', label: 'KYP' }, { value: 'SHA', label: 'SHA' }
-  ]
-
-  const bankOptions = [
-    { value: 'AirTel Money', label: 'AirTel Money' }, { value: 'Allahabad Bank', label: 'Allahabad Bank' },
-    { value: 'Andhra Bank', label: 'Andhra Bank' }, { value: 'AXIS Bank', label: 'AXIS Bank' },
-    { value: 'Bandhan Bank', label: 'Bandhan Bank' }, { value: 'Bank of Baroda', label: 'Bank of Baroda' },
-    { value: 'Bank of India', label: 'Bank of India' }, { value: 'Bank of Maharastra', label: 'Bank of Maharastra' },
-    { value: 'Bharatiya Mahila Bank', label: 'Bharatiya Mahila Bank' }, { value: 'Bihar Gramin Bank', label: 'Bihar Gramin Bank' },
-    { value: 'BIHAR KSHETRIYA GRAMIN BANK', label: 'BIHAR KSHETRIYA GRAMIN BANK' }, { value: 'Bihar State CO-OP Bank LTD.', label: 'Bihar State CO-OP Bank LTD.' },
-    { value: 'Canara Bank', label: 'Canara Bank' }, { value: 'Central Bank of India', label: 'Central Bank of India' },
-    { value: 'Corporation Bank', label: 'Corporation Bank' }, { value: 'DCB Bank Limited', label: 'DCB Bank Limited' },
-    { value: 'Dena Bank', label: 'Dena Bank' }, { value: 'Federal Bank', label: 'Federal Bank' },
-    { value: 'FINO Payments Bank LTD.', label: 'FINO Payments Bank LTD.' }, { value: 'HDFC Bank', label: 'HDFC Bank' },
-    { value: 'ICICI Bank', label: 'ICICI Bank' }, { value: 'IDBI Bank', label: 'IDBI Bank' },
-    { value: 'IDFC Bank', label: 'IDFC Bank' }, { value: 'Indian Bank', label: 'Indian Bank' },
-    { value: 'Indian Overseas Bank', label: 'Indian Overseas Bank' }, { value: 'Indian Post Bank', label: 'Indian Post Bank' },
-    { value: 'Indusind Bank LTD.', label: 'Indusind Bank LTD.' }, { value: 'ING Vysya Bank', label: 'ING Vysya Bank' },
-    { value: 'JANA Small Finance Bank LTD', label: 'JANA Small Finance Bank LTD' }, { value: 'JK Bank', label: 'JK Bank' },
-    { value: 'Karnataka Bank', label: 'Karnataka Bank' }, { value: 'Karur VYSYA Bank', label: 'Karur VYSYA Bank' },
-    { value: 'Kotak Mahindra Bank LTD.', label: 'Kotak Mahindra Bank LTD.' }, { value: 'Madhya Bihar Gramin Bank', label: 'Madhya Bihar Gramin Bank' },
-    { value: 'Oriental Bank of Comm.', label: 'Oriental Bank of Comm.' }, { value: 'PAYTM Payments Bank LTD.', label: 'PAYTM Payments Bank LTD.' },
-    { value: 'Punjab & Sind Bank', label: 'Punjab & Sind Bank' }, { value: 'Punjab National Bank', label: 'Punjab National Bank' },
-    { value: 'RESERVE BANK OF INDIA, PAD', label: 'RESERVE BANK OF INDIA, PAD' }, { value: 'Samastipur Kshetriya Gramin Bank', label: 'Samastipur Kshetriya Gramin Bank' },
-    { value: 'South Indian Bank', label: 'South Indian Bank' }, { value: 'Standard Chartered Bank LTD.', label: 'Standard Chartered Bank LTD.' },
-    { value: 'State Bank of Hyderabad', label: 'State Bank of Hyderabad' }, { value: 'State Bank of India (SBI)', label: 'State Bank of India (SBI)' },
-    { value: 'State Bank of Mysore', label: 'State Bank of Mysore' }, { value: 'State Bank of Patiala', label: 'State Bank of Patiala' },
-    { value: 'State Bank of Travancore', label: 'State Bank of Travancore' }, { value: 'Syndicate Bank', label: 'Syndicate Bank' },
-    { value: 'UCO Bank', label: 'UCO Bank' }, { value: 'Ujjivan Small Finance Bank Limited', label: 'Ujjivan Small Finance Bank Limited' },
-    { value: 'Union Bank of India', label: 'Union Bank of India' }, { value: 'United Bank of India', label: 'United Bank of India' },
-    { value: 'Utkarsh Small Finance Bank', label: 'Utkarsh Small Finance Bank' }, { value: 'Uttar Bihar Gramin Bank', label: 'Uttar Bihar Gramin Bank' },
-    { value: 'Vijaya Bank', label: 'Vijaya Bank' }, { value: 'YES Bank', label: 'YES Bank' },
-    { value: 'Other', label: 'Other' }
-  ]
-
-  const documentFields = [
-    { name: 'studentImage', label: 'Student Image', required: true, accept: 'image/*' },
-    { name: 'bankPasbook', label: 'Bank Pasbook', required: true, accept: 'image/*' },
-    { name: 'residentialCertificate', label: 'Residential Certificate', required: true, accept: 'image/*' },
-    { name: 'provisionalCertificate', label: 'Provisional Certificate', required: true, accept: 'image/*' },
-    { name: 'aadhaarFront', label: 'Aadhaar Card Front', required: true, accept: 'image/*' },
-    { name: 'aadhaarBack', label: 'Aadhar Card Back', required: true, accept: 'image/*' },
-    { name: 'drccReceipt', label: 'DRCC Receipt', required: true, accept: 'image/*' },
-    { name: 'counselorSignature', label: 'Counselor Signature', required: false, accept: '.pdf,.jpg,.jpeg,.png' },
-    { name: 'applicantSignature', label: 'Applicant Signature', required: false, accept: '.pdf,.jpg,.jpeg,.png' }
-  ]
-
-  // Form field configurations
-  const personalDetailsFields = [
-    { name: 'firstName', label: 'First Name', required: true, type: 'text', placeholder: 'Enter first name' },
-    { name: 'middleName', label: 'Middle Name', required: false, type: 'text', placeholder: 'Enter middle name' },
-    { name: 'lastName', label: 'Last Name', required: true, type: 'text', placeholder: 'Enter last name' },
-    { name: 'fatherName', label: 'Father\'s Name', required: true, type: 'text', placeholder: 'Enter father\'s full name' },
-    { name: 'motherName', label: 'Mother\'s Name', required: true, type: 'text', placeholder: 'Enter mother\'s full name' },
-    { name: 'dateOfBirth', label: 'Date of Birth', required: true, type: 'date' }
-  ]
-
-  const addressFields = [
-    { name: 'villageName', label: 'Village Name', required: false, type: 'text', placeholder: 'Enter village/town name' },
-    { name: 'pinCode', label: 'Pin Code', required: true, type: 'text', placeholder: '6 digit pin code', pattern: '[0-9]{6}', maxLength: '6' },
-    { name: 'blockNagarNigam', label: 'Block / Nagar Nigam / Nagar Parishad / Panchayat', required: false, type: 'text', placeholder: 'Enter block/nagar nigam/nagar parishad/panchayat' },
-    { name: 'postOffice', label: 'Post Office', required: false, type: 'text', placeholder: 'Enter post office name' }
-  ]
-
-  const mobileFields = [
-    { name: 'mobile1', label: 'Mobile Number 1', required: true },
-    { name: 'mobile2', label: 'Mobile Number 2', required: false },
-    { name: 'mobile3', label: 'Mobile Number 3', required: false },
-    { name: 'whatsapp', label: 'WhatsApp Number', required: false }
-  ]
-
-  const bankDetailFields = [
-    { name: 'accountNumber', label: 'Account Number', placeholder: 'Enter account number', type: 'number', pattern: '[0-9]{12}', maxLength: '12' },
-    { name: 'branchName', label: 'Branch Name', placeholder: 'Enter branch name', type: 'text' },
-    { name: 'ifscCode', label: 'IFSC Code', placeholder: 'Enter IFSC code', type: 'text', pattern: '[A-Z]{4}[0-9]{7}', maxLength: '11' }
-  ]
 
   const paymentFields = [
     { 
@@ -163,10 +45,12 @@ const Admission = ({ initialData = null, isEdit = false }) => {
 
   const conditionalCertificates = [
     {
+      name: 'tenthCertificate',
       show: (courseName) => courseName && courseName !== '10th',
       label: '10th Certificate'
     },
     {
+      name: 'twelfthCertificate',
       show: (courseName) => courseName && courseName !== '10th' && !courseName.startsWith('12th'),
       label: '12th Certificate'
     }
@@ -175,38 +59,41 @@ const Admission = ({ initialData = null, isEdit = false }) => {
   const academicLevels = [
     {
       key: 'class10', title: 'Class 10th Information', alwaysRequired: true, fields: [
-        { name: 'class10PassingYear', label: 'Passing Year', placeholder: 'e.g., 2020' },
-        { name: 'class10RollNo', label: 'Roll No.', placeholder: 'e.g., 0000000' },
-        { name: 'class10RollCode', label: 'Roll Code', placeholder: 'e.g., 0000000' },
+        { name: 'class10PassingYear', label: 'Passing Year', placeholder: 'e.g., 2020',pattern: '[0-9]{4}', maxLength: '4', type: 'number' },
+        { name: 'class10RollNo', label: 'Roll No.', placeholder: 'e.g., 0000000', pattern: '[0-9]{7}', maxLength: '7', type: 'number' },
+        { name: 'class10RollCode', label: 'Roll Code', placeholder: 'e.g., 0000000', pattern: '[0-9]{7}', maxLength: '7', type: 'number' },
         { name: 'class10Board', label: 'Board', placeholder: 'e.g., CBSE, ICSE, State Board etc.' },
-        { name: 'class10Marks', label: 'Marks/Division', placeholder: 'e.g., 90' },
-        { name: 'class10TotalMarks', label: 'Total Marks', placeholder: 'e.g., 90' },
+        { name: 'class10Marks', label: 'Marks/Division', placeholder: 'e.g., 90', type: 'number', pattern: '[0-9]{1,3}', maxLength: '3' },
+        { name: 'class10TotalMarks', label: 'Total Marks', placeholder: 'e.g., 90', type: 'number', pattern: '[0-9]{1,3}', maxLength: '3' },
         { name: 'class10Percentage', label: 'Percentage', placeholder: 'e.g., 90' },
-        { name: 'class10SchoolName', label: 'School Name', placeholder: 'School name' }
+        { name: 'class10SchoolName', label: 'School Name', placeholder: 'School name' },
+        { name: 'class10SchoolAddress', label: 'School Address', placeholder: 'School Address' },
       ]
     },
     {
       key: 'class12', title: 'Class 12th Information', requiredFor: ['12th', 'Graduation', 'Post Graduation'], fields: [
-        { name: 'class12PassingYear', label: 'Passing Year', placeholder: 'e.g., 2022' },
-        { name: 'class12RollNo', label: 'Roll No.', placeholder: 'e.g., 0000000' },
+        { name: 'class12PassingYear', label: 'Passing Year', placeholder: 'e.g., 2022', pattern: '[0-9]{4}', maxLength: '4', type: 'number' },
+        { name: 'class12RollNo', label: 'Roll No.', placeholder: 'e.g., 0000000', pattern: '[0-9]{7}', maxLength: '7', type: 'number' },
         { name: 'class12SchoolName', label: 'School Name', placeholder: 'School name' },
-        { name: 'class12Marks', label: 'Marks/Division', placeholder: 'e.g., 90' },
-        { name: 'class12TotalMarks', label: 'Total Marks', placeholder: 'e.g., 90' },
+        { name: 'class12SchoolAddress', label: 'School Address', placeholder: 'School Address' },
+        { name: 'class12Marks', label: 'Marks/Division', placeholder: 'e.g., 90', type: 'number', pattern: '[0-9]{1,3}', maxLength: '3' },
+        { name: 'class12TotalMarks', label: 'Total Marks', placeholder: 'e.g., 90' , type: 'number', pattern: '[0-9]{1,3}', maxLength: '3' },
         { name: 'class12Percentage', label: 'Percentage', placeholder: 'e.g., 90' },
         { name: 'class12Board', label: 'Board', placeholder: 'e.g., CBSE, ICSE, State Board etc.' },
-        { name: 'class12RollCode', label: 'Roll Code', placeholder: 'e.g., 0000000' },
+        { name: 'class12RollCode', label: 'Roll Code', placeholder: 'e.g., 0000000', pattern: '[0-9]{7}', maxLength: '7', type: 'number' }
       ]
     },
     {
       key: 'graduation', title: 'Graduation Information', requiredFor: ['Graduation', 'Post Graduation'], fields: [
-        { name: 'graduationSessionYear', label: 'Passing Year', placeholder: 'e.g., 2021' },
-        { name: 'graduationRollNo', label: 'Roll No.', placeholder: 'e.g., 0000000' },
-        { name: 'graduationRollCode', label: 'Roll Code', placeholder: 'e.g., 0000000' },
-        { name: 'graduationMarks', label: 'Marks/Division', placeholder: 'e.g., 90' },
-        { name: 'graduationTotalMarks', label: 'Total Marks', placeholder: 'e.g., 90' },
+        { name: 'graduationSessionYear', label: 'Passing Year', placeholder: 'e.g., 2021', pattern: '[0-9]{4}', maxLength: '4', type: 'number' },
+        { name: 'graduationRollNo', label: 'Roll No.', placeholder: 'e.g., 0000000', pattern: '[0-9]{7}', maxLength: '7', type: 'number' },
+        { name: 'graduationRollCode', label: 'Roll Code', placeholder: 'e.g., 0000000', pattern: '[0-9]{7}', maxLength: '7', type: 'number' },
+        { name: 'graduationMarks', label: 'Marks/Division', placeholder: 'e.g., 90', type: 'number', pattern: '[0-9]{1,3}', maxLength: '3' },
+        { name: 'graduationTotalMarks', label: 'Total Marks', placeholder: 'e.g., 90' , type: 'number', pattern: '[0-9]{1,3}', maxLength: '3' },
         { name: 'graduationPercentage', label: 'Percentage', placeholder: 'e.g., 90' },
         { name: 'graduationBoard', label: 'Board', placeholder: 'e.g., CBSE, ICSE, State Board etc.' },
-        { name: 'graduationSchoolName', label: 'College/University Name', placeholder: 'College/University name' }
+        { name: 'graduationSchoolName', label: 'College/University Name', placeholder: 'College/University name' },
+        { name: 'graduationSchoolAddress', label: 'College/University Address', placeholder: 'College/University Address' }
       ]
     },
     {
@@ -218,37 +105,11 @@ const Admission = ({ initialData = null, isEdit = false }) => {
     }
   ]
 
-  const officeUseOnlyFields = [
-    { name: 'regNo', label: 'Reg. No.', type: 'text', placeholder: 'Enter registration number' },
-    { name: 'regDate', label: 'Reg. Date', type: 'date' },
-    { name: 'program', label: 'Program', type: 'text', placeholder: 'Enter program name' },
-    { name: 'payment', label: 'Payment', type: 'text', placeholder: 'Enter payment amount' },
-    { name: 'paymentDate', label: 'Payment Date', type: 'date' },
-    { name: 'drccVerificationDate', label: 'DRCC Verification Date', type: 'date' },
-    { name: 'learnerCode', label: 'Learner Code', type: 'text', placeholder: 'Enter learner code' },
-    { name: 'batchStartDate', label: 'Batch Start Date', type: 'date' },
-    { name: 'batch', label: 'Batch Name', type: 'text', placeholder: 'Enter batch name' },
-    { name: 'batchCode', label: 'Batch Code', type: 'text', placeholder: 'Enter batch code' },
-    { name: 'allocation', label: 'Allocation', type: 'checkbox', placeholder: 'Enter allocation' },
-    { name: 'convert', label: 'Convert', type: 'checkbox', placeholder: 'Enter convert' },
-    { name: 'batchTime1', label: 'Batch Time 1', type: 'time' },
-    { name: 'batchTime2', label: 'Batch Time 2', type: 'time' }
-  ]
 
-  const officeUseOnly2Fields = [
-    { name: 'enrollmentNo', label: 'Enrollment No.', type: 'text', placeholder: 'Enter enrollment number' },
-    { name: 'enrollmentDate', label: 'Enrollment Date', type: 'date' },
-    { name: 'program2', label: 'Program', type: 'text', placeholder: 'Enter program name' },
-    { name: 'courseDuration', label: 'Course Duration', type: 'text', placeholder: 'e.g., 6 months, 1 year' },
-    { name: 'batchName', label: 'Batch Name', type: 'text', placeholder: 'Enter batch name' },
-    { name: 'batchTime', label: 'Batch Time', type: 'time' },
-    { name: 'certificateNo', label: 'Certificate No.', type: 'text', placeholder: 'Enter certificate number' },
-    { name: 'dateOfIssue', label: 'Date of Issue', type: 'date' }
-  ]
 
   const defaultFormData = {
     // Applicant Details
-    firstName: '', middleName: '', lastName: '', asPerSSC: '',
+    firstName: '', middleName: '', lastName: '', nameAsSSC: '',
     fatherName: '', fatherOccupation: '', fatherOccupationOther: '', motherName: '', dateOfBirth: '', gender: '',
     bloodGroup: '', maritalStatus: '', category: '', aadhaarNumber: '',
     mobile1: '', mobile2: '', mobile3: '', whatsapp: '', emailAddress: '',
@@ -262,16 +123,16 @@ const Admission = ({ initialData = null, isEdit = false }) => {
     sessionYear: '', courseName: '', studentProgram: '',
 
     // Class Details
-    class10PassingYear: '', class10RollNo: '', class10RollCode: '', class10SchoolName: '', class10Marks: '', class10TotalMarks: '', class10Percentage: '', class10Board: '',
-    class12PassingYear: '', class12RollNo: '', class12RollCode: '', class12SchoolName: '', class12Marks: '', class12TotalMarks: '', class12Percentage: '', class12Board: '',
-    graduationSessionYear: '', graduationRollNo: '', graduationRollCode: '', graduationMarks: '', graduationTotalMarks: '', graduationPercentage: '', graduationBoard: '', graduationSchoolName: '',
+    class10PassingYear: '', class10RollNo: '', class10RollCode: '', class10SchoolName: '',class10SchoolAddress:'', class10Marks: '', class10TotalMarks: '', class10Percentage: '', class10Board: '',
+    class12PassingYear: '', class12RollNo: '', class12RollCode: '', class12SchoolName: '',class12SchoolAddress:'', class12Marks: '', class12TotalMarks: '', class12Percentage: '', class12Board: '',
+    graduationSessionYear: '', graduationRollNo: '', graduationRollCode: '', graduationMarks: '', graduationTotalMarks: '', graduationPercentage: '', graduationBoard: '', graduationSchoolName: '',graduationSchoolAddress:'',
     postGraduationSessionYear: '', postGraduationRollNo: '', postGraduationSchoolName: '',
 
     // Bank Details
     bankName: '', bankNameOther: '', accountNumber: '', branchName: '', ifscCode: '',
 
     // Documents
-    studentImage: '', tenthCertificate: '', twelfthCertificate: '',
+  studentImage: '', bankPasbook: '', residentialCertificate: '', provisionalCertificate: '', aadhaarFront: '', aadhaarBack: '', drccReceipt: '', tenthCertificate: '', twelfthCertificate: '',
     counselorSignature: '', applicantSignature: '',
 
     // Additional fields
@@ -284,7 +145,7 @@ const Admission = ({ initialData = null, isEdit = false }) => {
 
     // Office Use Only 2 fields
     enrollmentNo: '', enrollmentDate: '', program2: '', courseDuration: '',
-    batchName: '', batchTime: '', certificateNo: '', dateOfIssue: '', remarks2: '',
+    batchName: '', batchMonth: '', batchYear: '', batchTime: '', certificateNo: '', dateOfIssue: '', remarks2: '',password: '',
 
     // Payment Details
     paymentAmount: '', paymentDate: new Date().toISOString().split('T')[0]
@@ -293,33 +154,33 @@ const Admission = ({ initialData = null, isEdit = false }) => {
   const [formData, setFormData] = useState(initialData || defaultFormData)
   const [isSameAddress, setIsSameAddress] = useState(false)
   const [additionalAcademicLevels, setAdditionalAcademicLevels] = useState([])
-  const fetchDistrictData = async (stateName) => {
-    try {
-      const response = await axios.post('https://countriesnow.space/api/v0.1/countries/state/cities', {
-        country: 'India',
-        state: stateName
-      })
-      setDistrictData(response?.data)
-    } catch (error) {
-      console.error('Failed to fetch states', error)
-    }
-  }
+  const [passwordEdited, setPasswordEdited] = useState(false)
+  // const fetchDistrictData = async (stateName) => {
+  //   try {
+  //     const response = await axios.post('https://countriesnow.space/api/v0.1/countries/state/cities', {
+  //       country: 'India',
+  //       state: stateName
+  //     })
+  //     setDistrictData(response?.data)
+  //   } catch (error) {
+  //     console.error('Failed to fetch states', error)
+  //   }
+  // }
 
-  useEffect(() => {
-    const fetchStateData = async () => {
-      try {
-        const response = await axios.post('https://countriesnow.space/api/v0.1/countries/states', {
-          country: 'India'
-        })
-        setStateData(response.data)
-      } catch (error) {
-        console.error('Failed to fetch states', error)
-      }
-    }
+  // const fetchStateData = async () => {
+  //   try {
+  //     const response = await axios.post('https://countriesnow.space/api/v0.1/countries/states', {
+  //       country: 'India'
+  //     })
+  //     setStateData(response.data)
+  //   } catch (error) {
+  //     console.error('Failed to fetch states', error)
+  //   }
+  // }
+  // useEffect(() => {
 
-    fetchStateData();
-
-  }, [])
+  //   fetchStateData();
+  // }, [])
   useEffect(() => {
     if (initialData) {
       setFormData(initialData)
@@ -327,14 +188,41 @@ const Admission = ({ initialData = null, isEdit = false }) => {
       // Set payment date to today if not provided
       setFormData(prev => ({
         ...prev,
-        paymentDate: prev.paymentDate || new Date().toISOString().split('T')[0]
+        paymentDate: prev.paymentDate || new Date().toISOString().split('T')[0],
+        password: prev.password || `${prev.mobile1 || ''}@${prev.firstName.charAt(0).toUpperCase() || ''}`
       }))
     }
   }, [initialData])
 
+  // Keep default password in sync with mobile1 and firstName until user edits password
+  useEffect(() => {
+    if (passwordEdited) return
+    setFormData(prev => ({
+      ...prev,
+      password: `${prev.mobile1 || ''}@${prev.firstName.charAt(0).toUpperCase() || ''}`
+    }))
+  }, [formData.firstName, formData.mobile1, passwordEdited])
+
   const handleInputChange = (field, value) => {
+    if (field === 'password') setPasswordEdited(true)
     setFormData(prev => {
-      const updated = { ...prev, [field]: value }
+      // sanitize specific fields before updating
+      let sanitizedValue = value
+      if (field === 'ifscCode') {
+        // Enforce IFSC format progressively: first 4 letters (A-Z), then up to 7 digits
+        sanitizedValue = String(value || '').toUpperCase().replace(/[^A-Z0-9]/g, '')
+        const letters = sanitizedValue.slice(0, 4).replace(/[^A-Z]/g, '')
+        const digits = sanitizedValue.slice(4).replace(/[^0-9]/g, '').slice(0, 7)
+        sanitizedValue = (letters + digits).slice(0, 11)
+      }
+      if (field === 'pinCode') {
+        sanitizedValue = String(value || '').replace(/\D/g, '').slice(0, 6)
+      }
+      if (field === 'mobile1' || field === 'mobile2' || field === 'mobile3' || field === 'whatsapp') {
+        sanitizedValue = String(value || '').replace(/\D/g, '').slice(0, 10)
+      }
+
+      const updated = { ...prev, [field]: sanitizedValue }
       // If checkbox is checked, sync both addresses bidirectionally
       if (isSameAddress) {
         if (field === 'permanentAddress') {
@@ -353,6 +241,20 @@ const Admission = ({ initialData = null, isEdit = false }) => {
         } else {
           updated.class10Percentage = ''
         }
+      }
+      const PREFIX = "CM7RKYP-"; // fixed prefix
+      const PREFIX2 = "CM7RSHA-"; // fixed prefix
+
+      if(field === 'regNo' || field === 'enrollmentNo'){
+          // Prevent deleting the prefix
+          if (!value.startsWith( field === 'regNo' ? PREFIX : PREFIX2)) {
+            value = field === 'regNo' ? PREFIX : PREFIX2;
+          }
+          let numericPart = value.slice(7);
+          numericPart = numericPart.replace(/\D/g, "");
+          numericPart = numericPart.slice(0, 15);
+          const finalValue =  (field === 'regNo' ? PREFIX : PREFIX2) + numericPart;
+          field === 'regNo' ? updated.regNo = finalValue : updated.enrollmentNo = finalValue;
       }
       
       if (field === 'class12Marks' || field === 'class12TotalMarks') {
@@ -423,6 +325,21 @@ const Admission = ({ initialData = null, isEdit = false }) => {
       disabilityType: checked ? prev.disabilityType : '',
       disabilityCertificate: checked ? prev.disabilityCertificate : ''
     }))
+  }
+
+  // Handler to update batch month/year and compute `batchName` (e.g., "Jan-2025")
+  const handleBatchChange = (field, value) => {
+    setFormData(prev => {
+      const updated = { ...prev, [field]: value }
+      const month = field === 'batchMonth' ? value : (prev.batchMonth || '')
+      const year = field === 'batchYear' ? value : (prev.batchYear || '')
+      if (month && year) {
+        updated.batchName = `${month}-${year}`
+      } else {
+        updated.batchName = ''
+      }
+      return updated
+    })
   }
 
   // Helper function to render select options
@@ -556,7 +473,7 @@ const Admission = ({ initialData = null, isEdit = false }) => {
           )}
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-1 p-1">
-          {level.fields.map(field => {
+            {level.fields.map(field => {
             const isPercentage = isPercentageField(field.name)
             // Use stored percentage value, or calculate if not available
             const percentageValue = isPercentage 
@@ -573,11 +490,22 @@ const Admission = ({ initialData = null, isEdit = false }) => {
                   required={!isPercentage}
                   disabled={isPercentage}
                   readOnly={isPercentage}
+                  maxLength={field.maxLength}
+                  pattern={field.pattern}
                   value={isPercentage ? percentageValue : (formData[field.name] || '')}
                   onChange={(e) => {
-                    if (!isPercentage) {
-                      handleInputChange(field.name, e.target.value)
+                    if (isPercentage) return
+                    let value = e.target.value || ''
+                    // If pattern expects digits only, strip non-digits
+                    if (field.pattern && field.pattern.includes('0-9')) {
+                      value = value.replace(/\D/g, '')
                     }
+                    // If pattern expects uppercase letters (like IFSC), uppercase and strip invalid chars
+                    if (field.pattern && field.pattern.includes('A-Z')) {
+                      value = value.toUpperCase().replace(/[^A-Z0-9]/g, '')
+                    }
+                    if (field.maxLength) value = value.slice(0, field.maxLength)
+                    handleInputChange(field.name, value)
                   }}
                   className={`w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent ${
                     isPercentage ? 'bg-gray-100 cursor-not-allowed' : ''
@@ -619,6 +547,8 @@ const Admission = ({ initialData = null, isEdit = false }) => {
                   <input
                     type={field.type}
                     value={formData[field.name] || ''}
+                    maxLength={field?.maxLength}
+                    initialvalue={field?.initialvalue}
                     onChange={(e) => handleInputChange(field.name, e.target.value)}
                     className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent"
                     placeholder={field.placeholder}
@@ -629,6 +559,40 @@ const Admission = ({ initialData = null, isEdit = false }) => {
             
           </div>
         ))}
+            <div className='bg-green-100 p-2'>
+              <label className="block text-sm font-medium text-green-700 mb-1">Batch Name</label>
+              <div className="flex items-center gap-2">
+                <select
+                  value={formData.batchMonth || ''}
+                  onChange={(e) => handleBatchChange('batchMonth', e.target.value)}
+                  className="p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none"
+                >
+                  <option value="">Month</option>
+                  {batchMonths.map(m => (
+                    <option key={m} value={m}>{m}</option>
+                  ))}
+                </select>
+
+                <select
+                  value={formData.batchYear || ''}
+                  onChange={(e) => handleBatchChange('batchYear', e.target.value)}
+                  className="p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none"
+                >
+                  <option value="">Year</option>
+                  {batchYears.map(y => (
+                    <option key={y} value={y}>{y}</option>
+                  ))}
+                </select>
+
+                <input
+                  type="text"
+                  readOnly
+                  value={formData.batchName || ''}
+                  placeholder="Batch (auto)"
+                  className="ml-2 p-2 border border-gray-300 rounded bg-gray-50"
+                />
+              </div>
+            </div>
       </div>
       <div className="mt-4">
         <div className="bg-orange-50 p-3 rounded">
@@ -656,11 +620,13 @@ const Admission = ({ initialData = null, isEdit = false }) => {
       { field: 'mobile1', label: 'Mobile Number 1' }, { field: 'emailAddress', label: 'Email Address' },
       { field: 'area', label: 'Rural/Urban Area' }, { field: 'state', label: 'State' },
       { field: 'district', label: 'District' }, { field: 'pinCode', label: 'Pin Code' },
-      { field: 'residentialAddress', label: 'Residential Address' }, { field: 'courseName', label: 'Course Name' }
+      { field: 'residentialAddress', label: 'Residential Address' }, { field: 'courseName', label: 'Course Name' },
+      { field: 'studentProgram', label: 'Program' }, { field: 'regNo', label: 'Registration Number' }
     ]
 
     requiredFields.forEach(({ field, label }) => {
-      if (!formData[field]?.trim()) errors.push(`${label} is required`)
+      const value = formData[field]
+      if (!value || (typeof value === 'string' && !value.trim())) errors.push(`${label} is required`)
     })
 
     // Validation patterns
@@ -707,7 +673,7 @@ const Admission = ({ initialData = null, isEdit = false }) => {
     return errors
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     const validationErrors = validateForm()
     if (validationErrors.length > 0) {
@@ -715,18 +681,215 @@ const Admission = ({ initialData = null, isEdit = false }) => {
       return
     }
 
-    if (isEdit) {
-      console.log('Student updated:', formData)
-    } else {
-      console.log('New student admission:', formData)
+    // Build multipart/form-data payload
+    const fd = new FormData()
+
+    // Map formData keys to expected backend schema keys
+    const mapping = {
+      firstName: 'firstName',
+      middleName: 'middleName',
+      lastName: 'lastName',
+      motherName: 'mothersName',
+      fatherName: 'fathersName',
+      dateOfBirth: 'dateOfBirth',
+      bloodGroup: 'bloodGroup',
+      maritalStatus: 'maritalStatus',
+      category: 'category',
+      aadhaarNumber: 'aadhaarNo',
+      mobile1: 'mobileNo1',
+      mobile2: 'mobileNo2',
+      mobile3: 'mobileNo3',
+      whatsapp: 'whatsappNo1',
+      emailAddress: 'email',
+      area: 'area',
+      state: 'state',
+      district: 'district',
+      pinCode: 'pincode',
+      residentialAddress: 'address',
+      courseName: 'qualification',
+      otherCourseName: 'specificCourseName',
+      batchName: 'batchName',
+      batchMonth: 'batchMonth',
+      batchYear: 'batchYear'
     }
 
-    try {
-      if (typeof window !== 'undefined') {
+    // Track which backend keys have been added to avoid duplicates
+    const addedKeys = new Set()
+
+    // Append mapped scalar fields
+    Object.keys(mapping).forEach(k => {
+      const value = formData[k]
+      const backendKey = mapping[k]
+      if (value !== undefined && value !== null && value !== '' && !addedKeys.has(backendKey)) {
+        fd.append(backendKey, String(value))
+        addedKeys.add(backendKey)
+      }
+    })
+
+    // Add registrationNo (use regNo first, fallback to enrollmentNo)
+    const registrationNo = formData.regNo || formData.enrollmentNo || ''
+    if (registrationNo && !addedKeys.has('registrationNo')) {
+      fd.append('registrationNo', String(registrationNo))
+      addedKeys.add('registrationNo')
+    }
+
+    // Add program (use studentProgram)
+    const program = formData.studentProgram || ''
+    if (program && !addedKeys.has('program')) {
+      fd.append('program', String(program))
+      addedKeys.add('program')
+    }
+
+    // Auto-generate nameAsSSC from name parts
+    const nameAsSSC = `${formData.firstName || ''} ${formData.middleName || ''} ${formData.lastName || ''}`.trim().replace(/\s+/g, ' ')
+    if (nameAsSSC && !addedKeys.has('nameAsSSC')) {
+      fd.append('nameAsSSC', nameAsSSC)
+      addedKeys.add('nameAsSSC')
+    }
+
+    // Payments: if paymentAmount provided, include as payments array
+    if (formData.paymentAmount) {
+      const payments = [{ amount: Number(formData.paymentAmount), date: formData.paymentDate || '' }]
+      fd.append('payments', JSON.stringify(payments))
+    }
+
+    // Append all file fields (if File object present) using their field names
+    const fileFieldNames = ['studentImage','bankPasbook','residentialCertificate','provisionalCertificate','aadhaarFront','aadhaarBack','drccReceipt','tenthCertificate','twelfthCertificate','disabilityCertificate','counselorSignature','applicantSignature']
+    fileFieldNames.forEach(name => {
+      const file = formData[name]
+      if (file) {
+        // If it's an object with .name and .size, treat as File
+        if (file instanceof File) {
+          fd.append(name, file, file.name)
+        } else if (typeof file === 'string') {
+          // If only filename stored, append filename as metadata
+          fd.append(name, file)
+        }
+      }
+    })
+
+    // Fields to exclude from the "remaining fields" loop (already handled above)
+    const excludeFromRemaining = ['regNo', 'enrollmentNo', 'studentProgram', 'paymentAmount', 'paymentDate']
+
+    // Append remaining fields that aren't files or previously mapped
+    Object.entries(formData).forEach(([k, v]) => {
+      if (!Object.keys(mapping).includes(k) && !fileFieldNames.includes(k) && !excludeFromRemaining.includes(k)) {
+        if (v === null || v === undefined || v === '') return
+        // Skip if this backend key was already added
+        if (addedKeys.has(k)) return
+        if (typeof v === 'object') {
+          // stringify arrays/objects
+          try { fd.append(k, JSON.stringify(v)) } catch { /* ignore */ }
+        } else {
+          fd.append(k, String(v))
+        }
+        addedKeys.add(k)
+      }
+    })
+
+    // Build a plain payload object for inspection (no network calls)
+    const payload = {}
+
+    // Mapped scalar fields
+    Object.keys(mapping).forEach(k => {
+      const value = formData[k]
+      if (value !== undefined && value !== null && value !== '') payload[mapping[k]] = value
+    })
+
+    // Include remaining scalar/primitive fields
+    Object.entries(formData).forEach(([k, v]) => {
+      if (!Object.keys(mapping).includes(k) && !fileFieldNames.includes(k) && !excludeFromRemaining.includes(k)) {
+        payload[k] = v
+      }
+    })
+
+    // Payments
+    if (formData.paymentAmount) {
+      payload.payments = [{ amount: Number(formData.paymentAmount), date: formData.paymentDate || '' }]
+    }
+
+    // Files metadata
+    payload.files = {}
+    fileFieldNames.forEach(name => {
+      const file = formData[name]
+      if (file) {
+        if (typeof File !== 'undefined' && file instanceof File) {
+          payload.files[name] = { fileName: file.name, size: file.size, type: file.type }
+        } else if (typeof file === 'object' && file.name) {
+          payload.files[name] = { fileName: file.name, size: file.size || null, type: file.type || null }
+        } else {
+          payload.files[name] = file
+        }
+      }
+    })
+
+    // Add special fields to payload for logging
+    payload.nameAsSSC = nameAsSSC
+    payload.registrationNo = registrationNo
+    payload.program = program
+
+    // Console log all data being submitted
+    console.log('='.repeat(60))
+    console.log('📋 FORM SUBMISSION DATA')
+    console.log('='.repeat(60))
+    
+    // Log required fields check
+    const requiredFieldsCheck = {
+      firstName: payload.firstName,
+      lastName: payload.lastName,
+      nameAsSSC: payload.nameAsSSC,
+      mothersName: payload.mothersName,
+      fathersName: payload.fathersName,
+      dateOfBirth: payload.dateOfBirth,
+      category: payload.category,
+      aadhaarNo: payload.aadhaarNo,
+      mobileNo1: payload.mobileNo1,
+      email: payload.email,
+      registrationNo: payload.registrationNo,
+      area: payload.area,
+      state: payload.state,
+      district: payload.district,
+      pincode: payload.pincode,
+      address: payload.address,
+      qualification: payload.qualification,
+      program: payload.program
+    }
+    
+    console.log('📌 Required Fields:')
+    Object.entries(requiredFieldsCheck).forEach(([key, value]) => {
+      const status = value ? '✅' : '❌'
+      console.log(`  ${status} ${key}: ${value || 'MISSING'}`)
+    })
+    
+    console.log('\n📌 All Payload Fields:')
+    console.table(payload)
+    
+    console.log('\n📁 Files attached:')
+    console.table(payload.files)
+    
+    console.log('\n📦 Full payload object:', payload)
+    console.log('='.repeat(60))
+
+    // Save to localStorage for persistence
+    if (typeof window !== 'undefined') {
+      try { 
         localStorage.setItem('admissionForm', JSON.stringify(formData))
+        localStorage.setItem('admissionFormPayload', JSON.stringify(payload)) 
+      } catch(e) { /* ignore */ }
+    }
+
+    // Send to backend API using FormData (for file upload support)
+    try {
+      const response = await studentapi.createStudent(fd)
+      console.log('✅ Submission response:', response)
+      if (response) {
+        alert('Student admission submitted successfully!')
+      } else {
+        alert('Submission failed. Check console for details.')
       }
     } catch (err) {
-      console.error('Failed to persist admission form to localStorage', err)
+      console.error('❌ Failed to submit admission:', err)
+      alert('Failed to submit admission: ' + (err.message || 'Unknown error'))
     }
   }
 
@@ -777,6 +940,8 @@ const Admission = ({ initialData = null, isEdit = false }) => {
                   <input
                     type="text"
                     disabled
+                    id='nameAsSSC'
+                    name='nameAsSSC'
                     value={`${formData.firstName} ${formData.middleName} ${formData.lastName}`}
                     className="w-full p-2 border uppercase text-gray-500 border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent"
                     placeholder="Name as per SSC certificate"
@@ -807,7 +972,11 @@ const Admission = ({ initialData = null, isEdit = false }) => {
                 </div>
 
                 {/* Select Fields */}
-                {personalSelectFields.map(field => renderSelectField(field, field.options, field.placeholder))}
+                {personalSelectFields.map(field => (
+                  <div key={field.name}>
+                    {renderSelectField(field, field.options, field.placeholder)}
+                  </div>
+                ))}
 
                 {/* Aadhaar Number */}
                 <div className="bg-orange-50 p-3 rounded">
@@ -838,14 +1007,16 @@ const Admission = ({ initialData = null, isEdit = false }) => {
                       {field.label} {field.required && <span className="text-red-500">*</span>}
                     </label>
                     <input
-                      type="number"
+                      type="text"
+                      inputMode="numeric"
                       required={field.required}
                       pattern="[0-9]{10}"
                       maxLength="10"
-                      value={formData[field.name]}
+                      value={formData[field.name] || ''}
                       onChange={(e) => {
-                        const value = e.target.value.slice(0, 10); // limit to 10 digits
-                        handleInputChange(field.name, value);
+                        const raw = e.target.value || '';
+                        const digits = raw.replace(/\D/g, '').slice(0, 10);
+                        handleInputChange(field.name, digits);
                       }}
                       className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent"
                       placeholder="10 digit mobile number"
@@ -934,20 +1105,20 @@ const Admission = ({ initialData = null, isEdit = false }) => {
                     required
                     value={formData.state}
                     onChange={(e) => {
-                      const selectedState = e.target.value
-                      handleInputChange('state', selectedState)
+                      const selectedStateName = e.target.value
+                      // set state name and reset district
+                      handleInputChange('state', selectedStateName)
                       handleInputChange('district', '')
-                      if (selectedState) {
-                        fetchDistrictData(selectedState)
-                      } else {
-                        setDistrictData({})
-                      }
+                      // find the state object from static data and set districts
+                      const stateObj = StatesAndDistrict.find(s => s.state === selectedStateName)
+                      if (stateObj) setDistrictData(stateObj)
+                      else setDistrictData({})
                     }}
                     className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent"
                   >
                     <option value="">Select State</option>
-                    {stateData && stateData?.data?.states && stateData?.data?.states?.length > 0 && stateData?.data?.states?.map((item) => (
-                      <option key={item.name} value={item.name}>{item.name}</option>)
+                    {StatesAndDistrict?.map((item, index) => (
+                      <option key={index} value={item.state}>{item.state}</option>)
                     )}
                   </select>
                 </div>
@@ -963,7 +1134,7 @@ const Admission = ({ initialData = null, isEdit = false }) => {
                     className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent"
                   >
                     <option value="">Select District</option>
-                    {districtData && districtData?.data && districtData?.data?.length > 0 && districtData?.data?.map((item) => (
+                    {districtData?.districts?.map((item) => (
                       <option key={item} value={item}>{item}</option>)
                     )}
                   </select>
@@ -975,12 +1146,24 @@ const Admission = ({ initialData = null, isEdit = false }) => {
                       {field.label} {field.required && <span className="text-red-500">*</span>}
                     </label>
                     <input
-                      type={field.type}
+                      type={field.type || 'text'}
                       required={field.required}
                       pattern={field.pattern}
                       maxLength={field.maxLength}
-                      value={formData[field.name]}
-                      onChange={(e) => handleInputChange(field.name, e.target.value)}
+                      value={formData[field.name] || ''}
+                      onChange={(e) => {
+                        let value = e.target.value || ''
+                        // If pattern expects digits only, strip non-digits
+                        if (field.pattern && field.pattern.includes('0-9')) {
+                          value = value.replace(/\D/g, '')
+                        }
+                        // If pattern expects uppercase letters (like IFSC), uppercase and strip invalid chars
+                        if (field.pattern && field.pattern.includes('A-Z')) {
+                          value = value.toUpperCase().replace(/[^A-Z0-9]/g, '')
+                        }
+                        if (field.maxLength) value = value.slice(0, field.maxLength)
+                        handleInputChange(field.name, value)
+                      }}
                       className="w-full p-2 border uppercase border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent"
                       placeholder={field.placeholder}
                     />
@@ -1032,7 +1215,7 @@ const Admission = ({ initialData = null, isEdit = false }) => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Course Name */}
                 {renderSelectField(
-                  { name: 'courseName', label: 'Course Name', required: true },
+                  { name: 'courseName', label: 'Qualification', required: true },
                   courseOptions, 'Select Course'
                 )}
 
@@ -1042,20 +1225,40 @@ const Admission = ({ initialData = null, isEdit = false }) => {
                   programOptions, 'Select Program'
                 )}
 
-                {/* Manual Course Name Input for "Other" option */}
-                {(
-                  renderSelectField(
-                    { name: 'otherCourseName', label: 'Specify Course Name', required: false },
-                    otherCourseOptions, 'Select Course'
-                  )
-                )}
+                {/* Manual Course Name Input for "Other" option (render as radio buttons) */}
+                <div className="bg-orange-50 p-3 rounded">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Specify Course Name</label>
+                  <div className="flex flex-wrap gap-4 mt-2">
+                    {otherCourseOptions.map(opt => (
+                      <label key={opt.value} className="flex items-center">
+                        <input
+                          type="radio"
+                          name="otherCourseName"
+                          value={opt.value}
+                          checked={formData.otherCourseName === opt.value}
+                          onChange={(e) => handleInputChange('otherCourseName', e.target.value)}
+                          className="mr-2"
+                        />
+                        {opt.label}
+                      </label>
+                    ))}
+                  </div>
+                </div>
               </div>
 
               {/* Academic Sections */}
-              {academicLevels.map(level => renderAcademicSection(level))}
+              {academicLevels.map(level => (
+                <div key={level.key}>
+                  {renderAcademicSection(level)}
+                </div>
+              ))}
 
               {/* Additional Academic Levels */}
-              {additionalAcademicLevels.map(level => renderAcademicSection(level, true))}
+              {additionalAcademicLevels.map(level => (
+                <div key={level.key}>
+                  {renderAcademicSection(level, true)}
+                </div>
+              ))}
 
               <button 
                 type="button"
@@ -1104,12 +1307,19 @@ const Admission = ({ initialData = null, isEdit = false }) => {
                   <div key={field.name} className="bg-orange-50 p-3 rounded">
                     <label className="block text-sm font-medium text-gray-700 mb-1">{field.label}</label>
                     <input
-                      type={field.type}
+                      type={field.type || 'text'}
                       pattern={field.pattern}
                       maxLength={field.maxLength}
-                      value={formData[field.name]}
+                      value={formData[field.name] || ''}
                       onChange={(e) => {
-                        const value = e.target.value.slice(0, field.maxLength); // limit to maxLength
+                        let value = e.target.value || ''
+                        if (field.pattern && field.pattern.includes('0-9')) {
+                          value = value.replace(/\D/g, '')
+                        }
+                        if (field.pattern && field.pattern.includes('A-Z')) {
+                          value = value.toUpperCase().replace(/[^A-Z0-9]/g, '')
+                        }
+                        if (field.maxLength) value = value.slice(0, field.maxLength)
                         handleInputChange(field.name, value);
                       }}
                       className="w-full p-2 border uppercase border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent"
@@ -1136,7 +1346,9 @@ const Admission = ({ initialData = null, isEdit = false }) => {
                     <input
                       type="file"
                       required={field.required}
-                      accept={field.accept}
+                      accept="image/*"
+                      capture="camera"
+                      onChange={(e) => handleInputChange(field.name, e.target.files[0] || null)}
                       className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent"
                     />
                   </div>
@@ -1152,6 +1364,7 @@ const Admission = ({ initialData = null, isEdit = false }) => {
                       type="file"
                       required
                       accept=".pdf,.jpg,.jpeg,.png"
+                      onChange={(e) => handleInputChange(cert.name, e.target.files[0] || null)}
                       className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent"
                     />
                   </div>
@@ -1167,7 +1380,7 @@ const Admission = ({ initialData = null, isEdit = false }) => {
                       type="file"
                       required
                       accept=".pdf,.jpg,.jpeg,.png,image/*"
-                      onChange={(e) => handleInputChange('disabilityCertificate', e.target.files[0]?.name || '')}
+                      onChange={(e) => handleInputChange('disabilityCertificate', e.target.files[0] || null)}
                       className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent"
                     />
                   </div>
@@ -1178,8 +1391,8 @@ const Admission = ({ initialData = null, isEdit = false }) => {
                   <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
                   <input
                     type="text"
-                    value={formData.ifscCode}
-                    onChange={(e) => handleInputChange('ifscCode', e.target.value)}
+                    value={formData.password || ''}
+                    onChange={(e) => handleInputChange('password', e.target.value)}
                     className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent"
                     placeholder="Enter password"
                   />
@@ -1206,7 +1419,7 @@ const Admission = ({ initialData = null, isEdit = false }) => {
                       type={field.type}
                       disabled={field.disabled}
                       value={field.name === 'paymentDate' 
-                        ? (formData[field.name] || new Date().toISOString().split('T')[0])
+                        ? (formData[field.name] || new Date().toISOString())
                         : (formData[field.name] || '')
                       }
                       onChange={(e) => handleInputChange(field.name, e.target.value)}

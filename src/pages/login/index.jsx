@@ -49,9 +49,10 @@ const LoginPage = () => {
         backgroundImage: "url('/login/dd34f2caf11d4e4f235559eba14bf832 (1).svg')",
         backgroundSize: "cover",
         backgroundPosition: "center",
-        backgroundRepeat: "no-repeat",
+        backgroundRepeat: "no-",
       }}
     >
+      <img src="'/login/dd34f2caf11d4e4f235559eba14bf832 (1).svg" alt="" />
       {/* Overlay for better readability */}
       <div className="absolute inset-0 bg-gradient-to-br from-[#b0b6f7]/20 via-[#a3b6e7]/20 to-[#4b3c7c]/20 z-0" />
       {/* Glassmorphic Card */}
