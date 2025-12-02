@@ -2,14 +2,16 @@
 import React, { useState, useEffect } from 'react'
 import Layout from '../../../../components/education/Layout'
 import axios from 'axios'
+import toast from 'react-hot-toast'
 import { bankOptions , documentFields, occupationOptions, areaOptions, bloodGroupOptions, categoryOptions , maritalStatusOptions, addressFields, personalDetailsFields, officeUseOnly2Fields, officeUseOnlyFields,bankDetailFields,courseOptions, genderOptions, mobileFields, otherCourseOptions, programOptions } from '../../../../constants/BankOptions'
-import { StatesAndDistrict } from '../../../../constants/StatesAndDistrict'
 import { studentapi } from '../../../../mocks/student'
 
 
 const Admission = ({ initialData = null, isEdit = false }) => {
-  const [stateData, setStateData] = useState({})
-  const [districtData, setDistrictData] = useState({})
+  const [stateData, setStateData] = useState([])
+  const [districtData, setDistrictData] = useState([])
+  const [loadingStates, setLoadingStates] = useState(false)
+  const [loadingDistricts, setLoadingDistricts] = useState(false)
 
   const batchMonths = [ 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'June', 'July', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec' ]
   const batchYears = [ 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026, 2027, 2028, 2029, 2030 ]
@@ -116,7 +118,7 @@ const Admission = ({ initialData = null, isEdit = false }) => {
     isPwD: false, disabilityType: '', disabilityCertificate: '',
 
     // Address Details
-    residentialAddress: '', permanentAddress: '', state: '', area: '', district: '',
+    residentialAddress: '', permanentAddress: '', state: '', stateCode: '', area: '', district: '',
     villageName: '', pinCode: '', blockNagarNigam: '', postOffice: '',
 
     // Academic Details
@@ -155,32 +157,125 @@ const Admission = ({ initialData = null, isEdit = false }) => {
   const [isSameAddress, setIsSameAddress] = useState(false)
   const [additionalAcademicLevels, setAdditionalAcademicLevels] = useState([])
   const [passwordEdited, setPasswordEdited] = useState(false)
-  // const fetchDistrictData = async (stateName) => {
-  //   try {
-  //     const response = await axios.post('https://countriesnow.space/api/v0.1/countries/state/cities', {
-  //       country: 'India',
-  //       state: stateName
-  //     })
-  //     setDistrictData(response?.data)
-  //   } catch (error) {
-  //     console.error('Failed to fetch states', error)
-  //   }
-  // }
+  
+  // Field validation errors state
+  const [fieldErrors, setFieldErrors] = useState({
+    aadhaarNumber: '',
+    mobile1: '',
+    emailAddress: '',
+    regNo: ''
+  })
+  const [validatingFields, setValidatingFields] = useState({
+    aadhaarNumber: false,
+    mobile1: false,
+    emailAddress: false,
+    regNo: false
+  })
 
-  // const fetchStateData = async () => {
-  //   try {
-  //     const response = await axios.post('https://countriesnow.space/api/v0.1/countries/states', {
-  //       country: 'India'
-  //     })
-  //     setStateData(response.data)
-  //   } catch (error) {
-  //     console.error('Failed to fetch states', error)
-  //   }
-  // }
-  // useEffect(() => {
+  // Debounce timer refs
+  const validationTimers = React.useRef({})
 
-  //   fetchStateData();
-  // }, [])
+  /**
+   * Validate a field against the backend to check if it already exists
+   * @param {string} formField - Frontend field name (aadhaarNumber, mobile1, emailAddress, regNo)
+   * @param {string} value - Value to validate
+   */
+  const validateFieldAsync = async (formField, value) => {
+    // Map frontend field names to backend field names
+    const fieldMapping = {
+      'aadhaarNumber': 'aadhaarNo',
+      'mobile1': 'mobileNo1',
+      'emailAddress': 'email',
+      'regNo': 'registrationNo'
+    }
+
+    const backendField = fieldMapping[formField]
+    if (!backendField) return
+
+    // Minimum length validation before API call
+    const minLengths = {
+      'aadhaarNumber': 12,
+      'mobile1': 10,
+      'emailAddress': 5,
+      'regNo': 8
+    }
+
+    if (!value || value.length < minLengths[formField]) {
+      setFieldErrors(prev => ({ ...prev, [formField]: '' }))
+      return
+    }
+
+    // Set validating state
+    setValidatingFields(prev => ({ ...prev, [formField]: true }))
+
+    try {
+      const result = await studentapi.validateField(backendField, value)
+      
+      if (result.exists) {
+        setFieldErrors(prev => ({ ...prev, [formField]: result.message }))
+      } else {
+        setFieldErrors(prev => ({ ...prev, [formField]: '' }))
+      }
+    } catch (error) {
+      console.error('Validation error:', error)
+      setFieldErrors(prev => ({ ...prev, [formField]: '' }))
+    } finally {
+      setValidatingFields(prev => ({ ...prev, [formField]: false }))
+    }
+  }
+
+  /**
+   * Debounced validation - waits 500ms after user stops typing
+   */
+  const debouncedValidate = (formField, value) => {
+    // Clear existing timer for this field
+    if (validationTimers.current[formField]) {
+      clearTimeout(validationTimers.current[formField])
+    }
+
+    // Set new timer
+    validationTimers.current[formField] = setTimeout(() => {
+      validateFieldAsync(formField, value)
+    }, 500)
+  }
+
+  // Fetch states from API
+  const fetchStateData = async () => {
+    setLoadingStates(true)
+    try {
+      const response = await axios.get('https://www.india-location-hub.in/api/states')
+      if (response.data?.success && response.data?.states) {
+        setStateData(response.data.states)
+      }
+    } catch (error) {
+      console.error('Failed to fetch states', error)
+      toast.error('Failed to fetch states. Please try again.')
+    } finally {
+      setLoadingStates(false)
+    }
+  }
+
+  // Fetch districts from API based on state code
+  const fetchDistrictData = async (stateCode) => {
+    setLoadingDistricts(true)
+    try {
+      const response = await axios.get(`https://www.india-location-hub.in/api/districts?state_code=${stateCode}`)
+      if (response.data?.success && response.data?.districts) {
+        setDistrictData(response.data.districts)
+      }
+    } catch (error) {
+      console.error('Failed to fetch districts', error)
+      toast.error('Failed to fetch districts. Please try again.')
+    } finally {
+      setLoadingDistricts(false)
+    }
+  }
+
+  // Fetch states on component mount
+  useEffect(() => {
+    fetchStateData()
+  }, [])
+
   useEffect(() => {
     if (initialData) {
       setFormData(initialData)
@@ -189,7 +284,7 @@ const Admission = ({ initialData = null, isEdit = false }) => {
       setFormData(prev => ({
         ...prev,
         paymentDate: prev.paymentDate || new Date().toISOString().split('T')[0],
-        password: prev.password || `${prev.mobile1 || ''}@${prev.firstName.charAt(0).toUpperCase() || ''}`
+        password: prev?.password || `${prev?.mobile1 || ''}@${prev?.firstName?.charAt(0)?.toUpperCase() || ''}`
       }))
     }
   }, [initialData])
@@ -199,7 +294,7 @@ const Admission = ({ initialData = null, isEdit = false }) => {
     if (passwordEdited) return
     setFormData(prev => ({
       ...prev,
-      password: `${prev.mobile1 || ''}@${prev.firstName.charAt(0).toUpperCase() || ''}`
+      password: `${prev.mobile1 || ''}@${prev?.firstName?.charAt(0)?.toUpperCase() || ''}`
     }))
   }, [formData.firstName, formData.mobile1, passwordEdited])
 
@@ -541,6 +636,44 @@ const Admission = ({ initialData = null, isEdit = false }) => {
                   />
                   {field.label}
                 </label>
+              ) : field.name === 'regNo' ? (
+                // Special handling for Registration Number with validation
+                <>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{field.label}</label>
+                  <div className="relative">
+                    <input
+                      type={field.type}
+                      value={formData[field.name] || ''}
+                      maxLength={field?.maxLength}
+                      onChange={(e) => {
+                        handleInputChange(field.name, e.target.value)
+                        debouncedValidate('regNo', e.target.value)
+                      }}
+                      onBlur={(e) => {
+                        if (e.target.value && e.target.value.length >= 8) {
+                          validateFieldAsync('regNo', e.target.value)
+                        }
+                      }}
+                      className={`w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent ${
+                        fieldErrors.regNo ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                      }`}
+                      placeholder={field.placeholder}
+                    />
+                    {validatingFields.regNo && (
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">
+                        Checking...
+                      </span>
+                    )}
+                  </div>
+                  {fieldErrors.regNo && (
+                    <p className="text-red-500 text-sm mt-1 flex items-center">
+                      <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                      </svg>
+                      {fieldErrors.regNo}
+                    </p>
+                  )}
+                </>
               ) : (
                 <>
                   <label className="block text-sm font-medium text-gray-700 mb-1">{field.label}</label>
@@ -675,9 +808,27 @@ const Admission = ({ initialData = null, isEdit = false }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    
+    // Check for field validation errors (duplicate mobile, email, aadhaar)
+    const hasFieldErrors = Object.values(fieldErrors).some(error => error !== '')
+    if (hasFieldErrors) {
+      const errorMessages = Object.entries(fieldErrors)
+        .filter(([, error]) => error !== '')
+        .map(([, error]) => error)
+      toast.error('Please fix the following errors:\n' + errorMessages.join('\n'))
+      return
+    }
+
+    // Check if any validation is still in progress
+    const isValidating = Object.values(validatingFields).some(v => v)
+    if (isValidating) {
+      toast.error('Please wait, validation is in progress...')
+      return
+    }
+
     const validationErrors = validateForm()
     if (validationErrors.length > 0) {
-      alert('Please fix the following errors:\n' + validationErrors.join('\n'))
+      toast.error('Please fix the following errors:\n' + validationErrors.join('\n'))
       return
     }
 
@@ -883,13 +1034,13 @@ const Admission = ({ initialData = null, isEdit = false }) => {
       const response = await studentapi.createStudent(fd)
       console.log('✅ Submission response:', response)
       if (response) {
-        alert('Student admission submitted successfully!')
+        toast.success('Student admission submitted successfully!')
       } else {
-        alert('Submission failed. Check console for details.')
+        toast.error('Submission failed. Check console for details.')
       }
     } catch (err) {
       console.error('❌ Failed to submit admission:', err)
-      alert('Failed to submit admission: ' + (err.message || 'Unknown error'))
+      toast.error('Failed to submit admission: ' + (err.message || 'Unknown error'))
     }
   }
 
@@ -983,21 +1134,46 @@ const Admission = ({ initialData = null, isEdit = false }) => {
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Aadhaar Number <span className="text-red-500">*</span>
                   </label>
-                  <input
-                    type="text"
-                    required
-                    pattern="[0-9]{12}"
-                    maxLength="12"
-                    value={formData.aadhaarNumber || ''}
-                    onChange={(e) => {
-                      // Only allow numeric characters and limit to 12 digits
-                      const value = e.target.value.replace(/\D/g, '').slice(0, 12);
-                      handleInputChange('aadhaarNumber', value);
-                    }}
-                    className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent"
-                    placeholder="12 digit Aadhaar number"
-                    inputMode="numeric"
-                  />
+                  <div className="relative">
+                    <input
+                      type="text"
+                      required
+                      pattern="[0-9]{12}"
+                      maxLength="12"
+                      value={formData.aadhaarNumber || ''}
+                      onChange={(e) => {
+                        // Only allow numeric characters and limit to 12 digits
+                        const value = e.target.value.replace(/\D/g, '').slice(0, 12);
+                        handleInputChange('aadhaarNumber', value);
+                        // Trigger validation after typing
+                        debouncedValidate('aadhaarNumber', value);
+                      }}
+                      onBlur={(e) => {
+                        // Validate on blur as well
+                        if (e.target.value.length === 12) {
+                          validateFieldAsync('aadhaarNumber', e.target.value);
+                        }
+                      }}
+                      className={`w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent ${
+                        fieldErrors.aadhaarNumber ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                      }`}
+                      placeholder="12 digit Aadhaar number"
+                      inputMode="numeric"
+                    />
+                    {validatingFields.aadhaarNumber && (
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">
+                        Checking...
+                      </span>
+                    )}
+                  </div>
+                  {fieldErrors.aadhaarNumber && (
+                    <p className="text-red-500 text-sm mt-1 flex items-center">
+                      <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                      </svg>
+                      {fieldErrors.aadhaarNumber}
+                    </p>
+                  )}
                 </div>
 
                 {/* Mobile Numbers */}
@@ -1006,29 +1182,90 @@ const Admission = ({ initialData = null, isEdit = false }) => {
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       {field.label} {field.required && <span className="text-red-500">*</span>}
                     </label>
-                    <input
-                      type="text"
-                      inputMode="numeric"
-                      required={field.required}
-                      pattern="[0-9]{10}"
-                      maxLength="10"
-                      value={formData[field.name] || ''}
-                      onChange={(e) => {
-                        const raw = e.target.value || '';
-                        const digits = raw.replace(/\D/g, '').slice(0, 10);
-                        handleInputChange(field.name, digits);
-                      }}
-                      className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent"
-                      placeholder="10 digit mobile number"
-                    />
+                    <div className="relative">
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        required={field.required}
+                        pattern="[0-9]{10}"
+                        maxLength="10"
+                        value={formData[field.name] || ''}
+                        onChange={(e) => {
+                          const raw = e.target.value || '';
+                          const digits = raw.replace(/\D/g, '').slice(0, 10);
+                          handleInputChange(field.name, digits);
+                          // Only validate mobile1 (primary mobile)
+                          if (field.name === 'mobile1') {
+                            debouncedValidate('mobile1', digits);
+                          }
+                        }}
+                        onBlur={(e) => {
+                          // Validate on blur for mobile1
+                          if (field.name === 'mobile1' && e.target.value.length === 10) {
+                            validateFieldAsync('mobile1', e.target.value);
+                          }
+                        }}
+                        className={`w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent ${
+                          field.name === 'mobile1' && fieldErrors.mobile1 ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                        }`}
+                        placeholder="10 digit mobile number"
+                      />
+                      {field.name === 'mobile1' && validatingFields.mobile1 && (
+                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">
+                          Checking...
+                        </span>
+                      )}
+                    </div>
+                    {field.name === 'mobile1' && fieldErrors.mobile1 && (
+                      <p className="text-red-500 text-sm mt-1 flex items-center">
+                        <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                        </svg>
+                        {fieldErrors.mobile1}
+                      </p>
+                    )}
                   </div>
                 ))}
 
                 {/* Email Address */}
-                {renderInputField(
-                  { name: 'emailAddress', label: 'Email Address', placeholder: 'Enter email address' },
-                  true, 'email'
-                )}
+                <div className="bg-orange-50 p-3 rounded">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Email Address <span className="text-red-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="email"
+                      required
+                      value={formData.emailAddress || ''}
+                      onChange={(e) => {
+                        handleInputChange('emailAddress', e.target.value);
+                        debouncedValidate('emailAddress', e.target.value);
+                      }}
+                      onBlur={(e) => {
+                        if (e.target.value && e.target.value.includes('@')) {
+                          validateFieldAsync('emailAddress', e.target.value);
+                        }
+                      }}
+                      className={`w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent ${
+                        fieldErrors.emailAddress ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                      }`}
+                      placeholder="Enter email address"
+                    />
+                    {validatingFields.emailAddress && (
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">
+                        Checking...
+                      </span>
+                    )}
+                  </div>
+                  {fieldErrors.emailAddress && (
+                    <p className="text-red-500 text-sm mt-1 flex items-center">
+                      <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                      </svg>
+                      {fieldErrors.emailAddress}
+                    </p>
+                  )}
+                </div>
 
                 {/* Father's Occupation */}
                 <div className="bg-orange-50 p-3 rounded">
@@ -1103,23 +1340,29 @@ const Admission = ({ initialData = null, isEdit = false }) => {
                   </label>
                   <select
                     required
-                    value={formData.state}
+                    disabled={loadingStates}
+                    value={formData.stateCode || ''}
                     onChange={(e) => {
-                      const selectedStateName = e.target.value
+                      const selectedOption = e.target.options[e.target.selectedIndex]
+                      const selectedStateName = selectedOption.text
+                      const selectedStateCode = e.target.value
                       // set state name and reset district
-                      handleInputChange('state', selectedStateName)
+                      handleInputChange('state', selectedStateName === 'Select State' ? '' : selectedStateName)
+                      handleInputChange('stateCode', selectedStateCode)
                       handleInputChange('district', '')
-                      // find the state object from static data and set districts
-                      const stateObj = StatesAndDistrict.find(s => s.state === selectedStateName)
-                      if (stateObj) setDistrictData(stateObj)
-                      else setDistrictData({})
+                      // fetch districts for selected state
+                      if (selectedStateCode) {
+                        fetchDistrictData(selectedStateCode)
+                      } else {
+                        setDistrictData([])
+                      }
                     }}
                     className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent"
                   >
-                    <option value="">Select State</option>
-                    {StatesAndDistrict?.map((item, index) => (
-                      <option key={index} value={item.state}>{item.state}</option>)
-                    )}
+                    <option value="">{loadingStates ? 'Loading states...' : 'Select State'}</option>
+                    {Array.isArray(stateData) && stateData.map((item) => (
+                      <option key={item.code} value={item.code}>{item.name}</option>
+                    ))}
                   </select>
                 </div>
 
@@ -1129,14 +1372,17 @@ const Admission = ({ initialData = null, isEdit = false }) => {
                   </label>
                   <select
                     required
+                    disabled={loadingDistricts || !formData.stateCode}
                     value={formData.district}
                     onChange={(e) => handleInputChange('district', e.target.value)}
                     className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent"
                   >
-                    <option value="">Select District</option>
-                    {districtData?.districts?.map((item) => (
-                      <option key={item} value={item}>{item}</option>)
-                    )}
+                    <option value="">
+                      {loadingDistricts ? 'Loading districts...' : !formData.stateCode ? 'Select state first' : 'Select District'}
+                    </option>
+                    {Array.isArray(districtData) && districtData.map((item) => (
+                      <option key={item.code} value={item.name}>{item.name}</option>
+                    ))}
                   </select>
                 </div>
 

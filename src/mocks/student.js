@@ -2,6 +2,61 @@ import axios from "axios";
 
 class StudentApi{
 
+    // Authorization token - in production, this should come from auth context/store
+    getAuthHeaders() {
+      return {
+        "Authorization": `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5MWM5NTMzNzE2Y2VjZTBjNTZmZTZhZSIsImVtYWlsIjoiYW5raXQucGF1bDk5NTVAZ21haWwuY28iLCJpYXQiOjE3NjQ2ODM5ODIsImV4cCI6MTc2NTI4Mzk4Mn0.9zYeRr4mgpaxaYcAecC0kg5sty6zmBbAwhF1JRg2d7Q`
+      }
+    }
+
+    /**
+     * Validate a single field (mobile, email, aadhaar, registrationNo) in real-time
+     * @param {string} field - Field name: 'mobileNo1', 'email', 'aadhaarNo', 'registrationNo'
+     * @param {string} value - Value to validate
+     * @returns {Promise<{exists: boolean, message: string}>}
+     */
+    async validateField(field, value) {
+      try {
+        const response = await axios.post(
+          `${process.env.NEXT_PUBLIC_API_URL}/userapp/students/validate-field`,
+          { field, value },
+          { headers: this.getAuthHeaders() }
+        );
+
+        if (response.data.status === 'SUCCESS') {
+          return response.data.data;
+        }
+        return { exists: false, message: 'Validation failed' };
+      } catch (error) {
+        console.error('❌ Validation API Error:', error.response?.data || error.message);
+        // Return false on error to not block form submission
+        return { exists: false, message: 'Unable to validate' };
+      }
+    }
+
+    /**
+     * Validate multiple fields at once
+     * @param {Object} fields - Object with field values { mobileNo1, email, aadhaarNo, registrationNo }
+     * @returns {Promise<{isValid: boolean, results: Object, errors: string[]}>}
+     */
+    async validateMultipleFields(fields) {
+      try {
+        const response = await axios.post(
+          `${process.env.NEXT_PUBLIC_API_URL}/userapp/students/validate-fields`,
+          fields,
+          { headers: this.getAuthHeaders() }
+        );
+
+        if (response.data.status === 'SUCCESS') {
+          return response.data.data;
+        }
+        return { isValid: true, results: {}, errors: [] };
+      } catch (error) {
+        console.error('❌ Validation API Error:', error.response?.data || error.message);
+        return { isValid: true, results: {}, errors: [] };
+      }
+    }
+
     async createStudent(studentdata){
 
       try {
@@ -47,6 +102,60 @@ class StudentApi{
       } catch (error) {
         console.error('❌ API Error:', error.response?.data || error.message)
         throw error
+      }
+    }
+
+    /**
+     * Get list of students with pagination
+     * @param {Object} options - Query options { page, limit, query }
+     * @returns {Promise<{data: Array, paginator: Object}>}
+     */
+    async getStudents(options = {}) {
+      try {
+        const response = await axios.post(
+          `${process.env.NEXT_PUBLIC_API_URL}/userapp/students/list`,
+          {
+            query: options.query || { isDeleted: false },
+            options: {
+              page: options.page || 1,
+              limit: options.limit || 10,
+              pagination: true,
+              ...(options.select && { select: options.select })
+            },
+            ...(options.fullDetails && { fullDetails: true })
+          },
+          { headers: this.getAuthHeaders() }
+        );
+
+        if (response.data.status === 'SUCCESS') {
+          return response.data.data;
+        }
+        return { data: [], paginator: { itemCount: 0, perPage: 10, pageCount: 0, currentPage: 1 } };
+      } catch (error) {
+        console.error('❌ Get Students API Error:', error.response?.data || error.message);
+        throw error;
+      }
+    }
+
+    /**
+     * Get single student by ID
+     * @param {string} id - Student ID
+     * @returns {Promise<Object>}
+     */
+    async getStudentById(id) {
+      try {
+        const response = await axios.get(
+          `${process.env.NEXT_PUBLIC_API_URL}/userapp/students/get/${id}`,
+          { headers: this.getAuthHeaders() }
+        );
+
+        if (response.data.status === 'SUCCESS') {
+          return response.data.data;
+        }
+        return null;
+      } catch (error) {
+        console.error('❌ Get Student API Error:', error.response?.data || error.message);
+        throw error;
       }
     } 
 
