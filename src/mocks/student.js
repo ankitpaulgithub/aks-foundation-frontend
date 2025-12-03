@@ -1,13 +1,6 @@
-import axios from "axios";
+import axiosInstance from "../utils/axiosInstance";
 
 class StudentApi{
-
-    // Authorization token - in production, this should come from auth context/store
-    getAuthHeaders() {
-      return {
-        "Authorization": `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5MWM5NTMzNzE2Y2VjZTBjNTZmZTZhZSIsImVtYWlsIjoiYW5raXQucGF1bDk5NTVAZ21haWwuY28iLCJpYXQiOjE3NjQ2ODM5ODIsImV4cCI6MTc2NTI4Mzk4Mn0.9zYeRr4mgpaxaYcAecC0kg5sty6zmBbAwhF1JRg2d7Q`
-      }
-    }
 
     /**
      * Validate a single field (mobile, email, aadhaar, registrationNo) in real-time
@@ -17,10 +10,9 @@ class StudentApi{
      */
     async validateField(field, value) {
       try {
-        const response = await axios.post(
-          `${process.env.NEXT_PUBLIC_API_URL}/userapp/students/validate-field`,
-          { field, value },
-          { headers: this.getAuthHeaders() }
+        const response = await axiosInstance.post(
+          '/userapp/students/validate-field',
+          { field, value }
         );
 
         if (response.data.status === 'SUCCESS') {
@@ -41,10 +33,9 @@ class StudentApi{
      */
     async validateMultipleFields(fields) {
       try {
-        const response = await axios.post(
-          `${process.env.NEXT_PUBLIC_API_URL}/userapp/students/validate-fields`,
-          fields,
-          { headers: this.getAuthHeaders() }
+        const response = await axiosInstance.post(
+          '/userapp/students/validate-fields',
+          fields
         );
 
         if (response.data.status === 'SUCCESS') {
@@ -58,21 +49,11 @@ class StudentApi{
     }
 
     async createStudent(studentdata){
-
       try {
         // Check if studentdata is FormData (for file uploads) or plain object
         const isFormData = typeof FormData !== 'undefined' && studentdata instanceof FormData
-        
-        const headers = {
-          "Authorization": `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5MWM5NTMzNzE2Y2VjZTBjNTZmZTZhZSIsImVtYWlsIjoiYW5raXQucGF1bDk5NTVAZ21haWwuY28iLCJpYXQiOjE3NjQwMDAzMTYsImV4cCI6MTc2NDYwMDMxNn0.McDfxz-Mr2AVphgik_g_UDXZrLfqQPF8_8FAD7T5vls`
-        }
-        
-        // Don't set Content-Type for FormData - axios will set it automatically with boundary
-        if (!isFormData) {
-          headers["Content-Type"] = "application/json"
-        }
 
-        console.log('📤 Sending to API:', `${process.env.NEXT_PUBLIC_API_URL}/userapp/students/create`)
+        console.log('📤 Sending to API: /userapp/students/create')
         console.log('📦 Data type:', isFormData ? 'FormData' : 'JSON')
         
         // Log FormData contents if it's FormData
@@ -87,10 +68,9 @@ class StudentApi{
           }
         }
 
-        const response = await axios.post(
-          `${process.env.NEXT_PUBLIC_API_URL}/userapp/students/create`, 
-          studentdata,
-          { headers }
+        const response = await axiosInstance.post(
+          '/userapp/students/create', 
+          studentdata
         );
         
         console.log('📥 API Response:', response.data)
@@ -112,8 +92,8 @@ class StudentApi{
      */
     async getStudents(options = {}) {
       try {
-        const response = await axios.post(
-          `${process.env.NEXT_PUBLIC_API_URL}/userapp/students/list`,
+        const response = await axiosInstance.post(
+          '/userapp/students/list',
           {
             query: options.query || { isDeleted: false },
             options: {
@@ -123,8 +103,7 @@ class StudentApi{
               ...(options.select && { select: options.select })
             },
             ...(options.fullDetails && { fullDetails: true })
-          },
-          { headers: this.getAuthHeaders() }
+          }
         );
 
         if (response.data.status === 'SUCCESS') {
@@ -144,9 +123,8 @@ class StudentApi{
      */
     async getStudentById(id) {
       try {
-        const response = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL}/userapp/students/get/${id}`,
-          { headers: this.getAuthHeaders() }
+        const response = await axiosInstance.get(
+          `/userapp/students/get/${id}`
         );
 
         if (response.data.status === 'SUCCESS') {

@@ -46,16 +46,20 @@ const StudentList = () => {
   const [searchField, setSearchField] = useState('firstName')
   const [searchValue, setSearchValue] = useState('')
   const [activeQuery, setActiveQuery] = useState({})
+  const hasFetched = React.useRef(false)
 
-  // Fetch students on mount
+  // Fetch students on mount only (runs once)
   useEffect(() => {
-    try {
-      dispatch(fetchStudents({ page: 1, limit: pagination?.perPage || 10, query: activeQuery }))
-    } catch (err) {
-      console.error('Failed to dispatch fetchStudents:', err)
-      toast.error('Failed to load students')
+    if (!hasFetched.current) {
+      hasFetched.current = true
+      try {
+        dispatch(fetchStudents({ page: 1, limit: pagination?.perPage || 10, query: {} }))
+      } catch (err) {
+        console.error('Failed to dispatch fetchStudents:', err)
+        toast.error('Failed to load students')
+      }
     }
-  }, [dispatch, activeQuery])
+  }, [])
 
   // Show error toast when error occurs
   useEffect(() => {
@@ -78,7 +82,7 @@ const StudentList = () => {
   const handleSearch = () => {
     if (!searchValue?.trim()) {
       // Clear search if empty
-      setActiveQuery({})
+      handleClearSearch()
       return
     }
     
@@ -106,6 +110,8 @@ const StudentList = () => {
     }
     
     setActiveQuery(query)
+    // Dispatch search immediately
+    dispatch(fetchStudents({ page: 1, limit: pagination?.perPage || 10, query }))
   }
 
   // Handle search on Enter key
@@ -119,6 +125,8 @@ const StudentList = () => {
   const handleClearSearch = () => {
     setSearchValue('')
     setActiveQuery({})
+    // Fetch all students without query
+    dispatch(fetchStudents({ page: 1, limit: pagination?.perPage || 10, query: {} }))
   }
 
   // Map API data to table format with safe access

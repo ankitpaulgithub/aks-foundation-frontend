@@ -17,21 +17,24 @@ const StudentDetails = () => {
   const dispatch = useDispatch()
   const { id } = router?.query || {}
   const [imageModal, setImageModal] = useState({ open: false, src: '', title: '' })
+  const hasFetched = React.useRef(false)
   
   // Redux state
   const student = useSelector(selectCurrentStudent)
   const loading = useSelector(selectStudentLoading)
   const error = useSelector(selectStudentError)
 
-  // Fetch student data when id is available
+  // Fetch student data when id is available (runs once per id)
   useEffect(() => {
-    if (id) {
+    if (id && !hasFetched.current) {
+      hasFetched.current = true
       dispatch(fetchStudentById(id))
     }
     
     // Cleanup on unmount
     return () => {
       dispatch(clearCurrentStudent())
+      hasFetched.current = false
     }
   }, [id, dispatch])
 

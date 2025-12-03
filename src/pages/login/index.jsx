@@ -1,7 +1,17 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { useRouter } from 'next/navigation';
+import { useDispatch, useSelector } from 'react-redux';
+import toast from 'react-hot-toast';
+import { 
+  loginUser, 
+  selectAuthLoading, 
+  selectAuthError, 
+  selectIsAuthenticated,
+  selectRole,
+  clearAuthError 
+} from '../../slices/authSlice';
 
 const validationSchema = Yup.object({
   email: Yup.string().email('Invalid email address').required('Email is required'),
@@ -11,6 +21,50 @@ const validationSchema = Yup.object({
 
 const LoginPage = () => {
   const router = useRouter();
+  const dispatch = useDispatch();
+  
+  const loading = useSelector(selectAuthLoading);
+  const error = useSelector(selectAuthError);
+  const isAuthenticated = useSelector(selectIsAuthenticated);
+  const userRole = useSelector(selectRole);
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated && userRole) {
+      redirectBasedOnRole(userRole);
+    }
+  }, [isAuthenticated, userRole]);
+
+  // Show error toast
+  useEffect(() => {
+    if (error) {
+      toast.error(error);
+      dispatch(clearAuthError());
+    }
+  }, [error, dispatch]);
+
+  const redirectBasedOnRole = (role) => {
+    // Convert role to lowercase for comparison
+    const normalizedRole = role?.toLowerCase();
+    
+    switch(normalizedRole) {
+      case 'education':
+        router.push('/(education)/dashboard');
+        break;
+      case 'library':
+        router.push('/(library)/dashboard');
+        break;
+      case 'consultancy':
+        router.push('/(consultancy)/dashboard');
+        break;
+      case 'construction':
+        router.push('/(construction)/dashboard');
+        break;
+      default:
+        router.push('/(education)/dashboard');
+    }
+  };
+
   const formik = useFormik({
     initialValues: {
       email: '',
@@ -19,26 +73,24 @@ const LoginPage = () => {
     },
     validationSchema,
     onSubmit: async (values, { setSubmitting }) => {
-      // Simulate async login
-
-      console.log(values);
-      if(values.role === 'Education'){
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        router.push('/(education)/dashboard');
+      try {
+        // Call login API with role
+        const result = await dispatch(loginUser({
+          username: values.email,
+          password: values.password,
+          role: values.role.toLowerCase()
+        })).unwrap();
+        
+        // Success - show toast and redirect based on API response role
+        toast.success('Login successful!');
+        redirectBasedOnRole(result.role);
+        
+      } catch (err) {
+        // Error is handled by the slice and shown via useEffect
+        console.error('Login failed:', err);
+      } finally {
         setSubmitting(false);
       }
-      else if(values.role === 'Library'){
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        router.push('/(library)/dashboard');
-        setSubmitting(false);
-      }
-      else if(values.role === 'Consultancy'){
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        router.push('/(consultancy)/dashboard');
-        setSubmitting(false);
-      }
-      // You can handle login logic here
-      // alert(JSON.stringify(values, null, 2));
     },
   });
 
@@ -97,7 +149,7 @@ const LoginPage = () => {
               <div className="text-xs text-red-500 mt-1 ml-2">{formik.errors.password}</div>
             )}
           </div>
-          {/* select Field */}
+          {/* Role Select Field */}
           <div className="relative">
             <select
               name="role"
@@ -120,9 +172,9 @@ const LoginPage = () => {
           <button
             type="submit"
             className="w-full py-2.5 sm:py-3 cursor-pointer rounded-full bg-white text-indigo-700 font-semibold text-base sm:text-lg shadow hover:bg-indigo-100 transition-colors flex items-center justify-center"
-            disabled={formik.isSubmitting}
+            disabled={formik.isSubmitting || loading}
           >
-            {formik.isSubmitting ? (
+            {(formik.isSubmitting || loading) ? (
               <svg className="animate-spin h-5 w-5 text-indigo-700" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path></svg>
             ) : (
               'Login'

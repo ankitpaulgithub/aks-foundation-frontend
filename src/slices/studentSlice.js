@@ -1,13 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
-
-// API base URL
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
-
-// Auth headers - in production, this should come from auth state
-const getAuthHeaders = () => ({
-  "Authorization": `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5MWM5NTMzNzE2Y2VjZTBjNTZmZTZhZSIsImVtYWlsIjoiYW5raXQucGF1bDk5NTVAZ21haWwuY28iLCJpYXQiOjE3NjQ2ODM5ODIsImV4cCI6MTc2NTI4Mzk4Mn0.9zYeRr4mgpaxaYcAecC0kg5sty6zmBbAwhF1JRg2d7Q`
-});
+import axiosInstance from '../utils/axiosInstance';
 
 /**
  * Fetch students list with pagination
@@ -16,8 +8,8 @@ export const fetchStudents = createAsyncThunk(
   'students/fetchStudents',
   async ({ page = 1, limit = 10, query = {} }, { rejectWithValue }) => {
     try {
-      const response = await axios.post(
-        `${API_URL}/userapp/students/list`,
+      const response = await axiosInstance.post(
+        '/userapp/students/list',
         {
           query: { isDeleted: false, ...query },
           options: {
@@ -25,8 +17,7 @@ export const fetchStudents = createAsyncThunk(
             limit,
             pagination: true
           }
-        },
-        { headers: getAuthHeaders() }
+        }
       );
 
       if (response.data.status === 'SUCCESS') {
@@ -46,9 +37,8 @@ export const fetchStudentById = createAsyncThunk(
   'students/fetchStudentById',
   async (id, { rejectWithValue }) => {
     try {
-      const response = await axios.get(
-        `${API_URL}/userapp/students/get/${id}`,
-        { headers: getAuthHeaders() }
+      const response = await axiosInstance.get(
+        `/userapp/students/get/${id}`
       );
 
       if (response.data.status === 'SUCCESS') {
@@ -68,13 +58,9 @@ export const createStudent = createAsyncThunk(
   'students/createStudent',
   async (formData, { rejectWithValue }) => {
     try {
-      const headers = { ...getAuthHeaders() };
-      // Don't set Content-Type for FormData - axios will set it automatically
-      
-      const response = await axios.post(
-        `${API_URL}/userapp/students/create`,
-        formData,
-        { headers }
+      const response = await axiosInstance.post(
+        '/userapp/students/create',
+        formData
       );
 
       if (response.data.status === 'SUCCESS') {
@@ -94,10 +80,9 @@ export const validateField = createAsyncThunk(
   'students/validateField',
   async ({ field, value }, { rejectWithValue }) => {
     try {
-      const response = await axios.post(
-        `${API_URL}/userapp/students/validate-field`,
-        { field, value },
-        { headers: getAuthHeaders() }
+      const response = await axiosInstance.post(
+        '/userapp/students/validate-field',
+        { field, value }
       );
 
       if (response.data.status === 'SUCCESS') {

@@ -1,37 +1,47 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { IoSearch } from "react-icons/io5";
 import { FaRegCalendarAlt } from "react-icons/fa";
 import { BsBell } from "react-icons/bs";
 import { MdKeyboardArrowDown } from "react-icons/md";
 import { FaUserAlt } from "react-icons/fa";
+import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 
 // import { useNavigate } from "react-router-dom";
 // import { useToast } from "../context/toster";
 
 const Navbar = () => {
-//   const navigate = useNavigate()
+  const router = useRouter();
+  const [userEmail, setUserEmail] = useState('');
+  const [userRole, setUserRole] = useState('');
 
-//   const toastContext = useToast();
-  
-//       if (!toastContext) {
-//           throw new Error("useToast must be used within a ToastProvider");
-//         }
-  
-//         const { setAlert } = toastContext;
+  useEffect(() => {
+    // Get user data from localStorage
+    const userStr = localStorage.getItem('user');
+    const role = localStorage.getItem('userRole');
+    
+    if (userStr) {
+      try {
+        const user = JSON.parse(userStr);
+        setUserEmail(user?.email || '');
+      } catch (e) {
+        setUserEmail('');
+      }
+    }
+    setUserRole(role || '');
+  }, []);
 
-  const handlelogout =()=>{
-//     setAlert({
-//       open: true,
-//       severity: 'success',
-//       message: "Logout Successfully"
-//   });
-    // localStorage.setItem('accessToken', undefined)
-    // localStorage.setItem('user_id', undefined)
-    // localStorage.setItem('emp_Id', undefined)
-    // localStorage.setItem('org_code', undefined)
-    // navigate('/login')
-    // window.location.reload()
-  }
+  const handleLogout = () => {
+    // Clear all auth data from localStorage
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('user');
+    localStorage.removeItem('userRole');
+    localStorage.removeItem('refreshToken');
+    
+    toast.success('Logged out successfully');
+    router.push('/login');
+  };
+
   return (
     <div>
       <div className="h-[60px] flex border border-gray-300 items-center bg-white px-3 xl:px-8">
@@ -78,23 +88,19 @@ const Navbar = () => {
           <div className="hidden sm:flex">
             <div>
               {/* name */}
-              <p className="text-sm ">Admin Name</p>
+              <p className="text-sm ">{userEmail ? userEmail?.split('@')[0] : "User"}</p>
 
               {/* type */}
-              <p className="text-gray-400 text-sm">Admin</p>
+              <p className="text-gray-400 text-sm">{userRole || "Admin"}</p>
             </div>
           </div>
 
           {/* logut button  */}
         <div className=" hidden  group-hover:flex min-w-[180px] z-10 flex-col absolute right-0 top-10 bg-[#fff] shadow-2xl p-3 rounded">
+          
           <button
-            onClick={()=>navigate('/dashboard/employee-roles')}
-              className={` p-2  flex  text-sm font-semibold items-start  text-gray-500`}
-            >Employee Roles{" "}
-          </button>
-          <button
-            onClick={handlelogout}
-              className={` p-2  flex  text-sm font-semibold items-start  text-gray-500`}
+            onClick={handleLogout}
+              className={` p-2  flex  text-sm font-semibold items-start cursor-pointer  text-gray-500`}
             >Logout{" "}
           </button>
         </div>

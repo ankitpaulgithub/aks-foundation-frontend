@@ -261,7 +261,7 @@ const Admission = ({ initialData = null, isEdit = false }) => {
     try {
       const response = await axios.get(`https://www.india-location-hub.in/api/districts?state_code=${stateCode}`)
       if (response.data?.success && response.data?.districts) {
-        setDistrictData(response.data.districts)
+        setDistrictData(response.data.districts.sort((a, b) => a.name.localeCompare(b.name)))
       }
     } catch (error) {
       console.error('Failed to fetch districts', error)
@@ -1559,13 +1559,16 @@ const Admission = ({ initialData = null, isEdit = false }) => {
                       value={formData[field.name] || ''}
                       onChange={(e) => {
                         let value = e.target.value || ''
-                        if (field.pattern && field.pattern.includes('0-9')) {
-                          value = value.replace(/\D/g, '')
+                        // Skip generic pattern handling for ifscCode - it has special handling in handleInputChange
+                        if (field.name !== 'ifscCode') {
+                          if (field.pattern && field.pattern.includes('0-9') && !field.pattern.includes('A-Z')) {
+                            value = value.replace(/\D/g, '')
+                          }
+                          if (field.pattern && field.pattern.includes('A-Z')) {
+                            value = value.toUpperCase().replace(/[^A-Z0-9]/g, '')
+                          }
+                          if (field.maxLength) value = value.slice(0, field.maxLength)
                         }
-                        if (field.pattern && field.pattern.includes('A-Z')) {
-                          value = value.toUpperCase().replace(/[^A-Z0-9]/g, '')
-                        }
-                        if (field.maxLength) value = value.slice(0, field.maxLength)
                         handleInputChange(field.name, value);
                       }}
                       className="w-full p-2 border uppercase border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent"
