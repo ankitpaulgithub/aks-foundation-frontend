@@ -1,5 +1,6 @@
 "use client"
 import React, { useState, useEffect } from 'react'
+import { useRouter } from 'next/router'
 import Layout from '../../../../components/education/Layout'
 import axios from 'axios'
 import toast from 'react-hot-toast'
@@ -7,7 +8,12 @@ import { bankOptions , documentFields, occupationOptions, areaOptions, bloodGrou
 import { studentapi } from '../../../../mocks/student'
 
 
-const Admission = ({ initialData = null, isEdit = false }) => {
+const Admission = ({ initialData = null }) => {
+  const router = useRouter()
+  const { edit: editId } = router?.query || {}
+  
+  const [isEditMode, setIsEditMode] = useState(false)
+  const [loadingStudent, setLoadingStudent] = useState(false)
   const [stateData, setStateData] = useState([])
   const [districtData, setDistrictData] = useState([])
   const [loadingStates, setLoadingStates] = useState(false)
@@ -276,6 +282,225 @@ const Admission = ({ initialData = null, isEdit = false }) => {
     fetchStateData()
   }, [])
 
+  // Fetch student data when in edit mode
+  useEffect(() => {
+    const fetchStudentForEdit = async () => {
+      if (!editId) {
+        setIsEditMode(false)
+        return
+      }
+      
+      setIsEditMode(true)
+      setLoadingStudent(true)
+      
+      try {
+        // Try to get from localStorage first (set from details page)
+        let studentData = null
+        if (typeof window !== 'undefined') {
+          const storedStudent = localStorage.getItem('student')
+          if (storedStudent) {
+            try {
+              studentData = JSON.parse(storedStudent)
+              // Clear after reading
+              localStorage.removeItem('student')
+            } catch (e) {
+              console.error('Failed to parse stored student data:', e)
+            }
+          }
+        }
+        
+        // If no stored data or ID doesn't match, fetch from API
+        if (!studentData || (studentData._id !== editId && studentData.id !== editId)) {
+          studentData = await studentapi.getStudentById(editId)
+        }
+        
+        if (!studentData) {
+          toast.error('Student not found')
+          router.push('/(education)/students/list')
+          return
+        }
+        
+        // Map API data to form data structure
+        const mappedFormData = mapApiDataToFormData(studentData)
+        setFormData(mappedFormData)
+        
+        // If state is present, fetch districts
+        if (studentData.state) {
+          const stateOption = stateData.find(s => s.name === studentData.state)
+          if (stateOption) {
+            fetchDistrictData(stateOption.state_code)
+          }
+        }
+        
+        toast.success('Student data loaded for editing')
+      } catch (error) {
+        console.error('Failed to fetch student for edit:', error)
+        toast.error('Failed to load student data: ' + (error.message || 'Unknown error'))
+      } finally {
+        setLoadingStudent(false)
+      }
+    }
+    
+    if (router.isReady) {
+      fetchStudentForEdit()
+    }
+  }, [editId, router.isReady, stateData])
+
+  /**
+   * Map API response data to form data structure
+   * @param {Object} apiData - API response data
+   * @returns {Object} - Mapped form data
+   */
+  const mapApiDataToFormData = (apiData) => {
+    const a = apiData || {}
+    
+    // Extract registration number parts
+    const regNo = a.registrationNo || ''
+    const PREFIX = "CM7RKYP-"
+    const PREFIX2 = "CM7RSHA-"
+    
+    // Check if regNo has prefix, if not add it
+    const formattedRegNo = regNo.startsWith(PREFIX) ? regNo : (regNo ? PREFIX + regNo.replace(/^CM7R[A-Z]{3}-/, '') : PREFIX)
+    const formattedEnrollmentNo = regNo.startsWith(PREFIX2) ? regNo : (regNo ? PREFIX2 + regNo.replace(/^CM7R[A-Z]{3}-/, '') : PREFIX2)
+    
+    return {
+      // Applicant Details
+      firstName: a.firstName || '',
+      middleName: a.middleName || '',
+      lastName: a.lastName || '',
+      nameAsSSC: a.nameAsSSC || '',
+      fatherName: a.fathersName || '',
+      fatherOccupation: a.fatherOccupation || '',
+      fatherOccupationOther: a.fatherOccupationOther || '',
+      motherName: a.mothersName || '',
+      dateOfBirth: a.dateOfBirth ? a.dateOfBirth.split('T')[0] : '',
+      gender: a.gender || '',
+      bloodGroup: a.bloodGroup || '',
+      maritalStatus: a.maritalStatus || '',
+      category: a.category || '',
+      aadhaarNumber: a.aadhaarNo || '',
+      mobile1: a.mobileNo1 || '',
+      mobile2: a.mobileNo2 || '',
+      mobile3: a.mobileNo3 || '',
+      whatsapp: a.whatsappNo1 || '',
+      emailAddress: a.email || '',
+      isPwD: a.isPwD || false,
+      disabilityType: a.disabilityType || '',
+      disabilityCertificate: a.disabilityCertificate || '',
+
+      // Address Details
+      residentialAddress: a.address || '',
+      permanentAddress: a.permanentAddress || '',
+      state: a.state || '',
+      stateCode: a.stateCode || '',
+      area: a.area || '',
+      district: a.district || '',
+      villageName: a.villageName || '',
+      pinCode: a.pincode || '',
+      blockNagarNigam: a.blockNagarNigam || '',
+      postOffice: a.postOffice || '',
+
+      // Academic Details
+      sessionYear: a.sessionYear || '',
+      courseName: a.qualification || '',
+      studentProgram: a.program || '',
+      otherCourseName: a.specificCourseName || '',
+
+      // Class 10th Details
+      class10PassingYear: a.class10PassingYear || '',
+      class10RollNo: a.class10RollNo || '',
+      class10RollCode: a.class10RollCode || '',
+      class10SchoolName: a.class10SchoolName || '',
+      class10SchoolAddress: a.class10SchoolAddress || '',
+      class10Marks: a.class10Marks || '',
+      class10TotalMarks: a.class10TotalMarks || '',
+      class10Percentage: a.class10Percentage || '',
+      class10Board: a.class10Board || '',
+
+      // Class 12th Details
+      class12PassingYear: a.class12PassingYear || '',
+      class12RollNo: a.class12RollNo || '',
+      class12RollCode: a.class12RollCode || '',
+      class12SchoolName: a.class12SchoolName || '',
+      class12SchoolAddress: a.class12SchoolAddress || '',
+      class12Marks: a.class12Marks || '',
+      class12TotalMarks: a.class12TotalMarks || '',
+      class12Percentage: a.class12Percentage || '',
+      class12Board: a.class12Board || '',
+
+      // Graduation Details
+      graduationSessionYear: a.graduationSessionYear || '',
+      graduationRollNo: a.graduationRollNo || '',
+      graduationRollCode: a.graduationRollCode || '',
+      graduationMarks: a.graduationMarks || '',
+      graduationTotalMarks: a.graduationTotalMarks || '',
+      graduationPercentage: a.graduationPercentage || '',
+      graduationBoard: a.graduationBoard || '',
+      graduationSchoolName: a.graduationSchoolName || '',
+      graduationSchoolAddress: a.graduationSchoolAddress || '',
+
+      // Post Graduation Details
+      postGraduationSessionYear: a.postGraduationSessionYear || '',
+      postGraduationRollNo: a.postGraduationRollNo || '',
+      postGraduationSchoolName: a.postGraduationSchoolName || '',
+
+      // Bank Details
+      bankName: a.bankName || '',
+      bankNameOther: a.bankNameOther || '',
+      accountNumber: a.accountNumber || '',
+      branchName: a.branchName || '',
+      ifscCode: a.ifscCode || '',
+
+      // Documents - store URLs for display (actual file upload will be handled separately)
+      studentImage: a.files?.studentImage || '',
+      bankPasbook: a.files?.bankPasbook || '',
+      residentialCertificate: a.files?.residentialCertificate || '',
+      provisionalCertificate: a.files?.provisionalCertificate || '',
+      aadhaarFront: a.files?.aadhaarFront || '',
+      aadhaarBack: a.files?.aadhaarBack || '',
+      drccReceipt: a.files?.drccReceipt || '',
+      tenthCertificate: a.files?.tenthCertificate || '',
+      twelfthCertificate: a.files?.twelfthCertificate || '',
+      counselorSignature: a.files?.counselorSignature || '',
+      applicantSignature: a.files?.applicantSignature || '',
+
+      // Office Use Only fields
+      regNo: formattedRegNo,
+      enrollmentNo: formattedEnrollmentNo,
+      regDate: a.regDate || '',
+      program: a.program || '',
+      payment: a.payment || '',
+      paymentDate: a.paymentDate || new Date().toISOString().split('T')[0],
+      drccVerificationDate: a.drccVerificationDate || '',
+      learnerCode: a.learnerCode || '',
+      batchStartDate: a.batchStartDate || '',
+      batch: a.batch || '',
+      batchCode: a.batchCode || '',
+      batchTime1: a.batchTime1 || '',
+      batchTime2: a.batchTime2 || '',
+      remarks: a.remarks || '',
+
+      // Office Use Only 2 fields
+      enrollmentDate: a.enrollmentDate || '',
+      program2: a.program2 || '',
+      courseDuration: a.courseDuration || '',
+      batchName: a.batchName || '',
+      batchMonth: a.batchMonth || '',
+      batchYear: a.batchYear || '',
+      batchTime: a.batchTime || '',
+      certificateNo: a.certificateNo || '',
+      dateOfIssue: a.dateOfIssue || '',
+      remarks2: a.remarks2 || '',
+      password: a.password || '',
+
+      // Payment Details (not from existing payments, for new payment entry)
+      paymentAmount: '',
+      
+      // Store the original ID for update
+      _id: a._id || a.id || ''
+    }
+  }
+
   useEffect(() => {
     if (initialData) {
       setFormData(initialData)
@@ -350,6 +575,16 @@ const Admission = ({ initialData = null, isEdit = false }) => {
           numericPart = numericPart.slice(0, 15);
           const finalValue =  (field === 'regNo' ? PREFIX : PREFIX2) + numericPart;
           field === 'regNo' ? updated.regNo = finalValue : updated.enrollmentNo = finalValue;
+          
+          // Sync enrollmentNo with regNo - when enrollmentNo is changed, also update regNo
+          if (field === 'enrollmentNo') {
+            // Extract just the numeric part and apply to regNo with its prefix
+            updated.regNo = PREFIX + numericPart;
+          }
+          // Sync regNo with enrollmentNo - when regNo is changed, also update enrollmentNo
+          if (field === 'regNo') {
+            updated.enrollmentNo = PREFIX2 + numericPart;
+          }
       }
       
       if (field === 'class12Marks' || field === 'class12TotalMarks') {
@@ -1031,16 +1266,70 @@ const Admission = ({ initialData = null, isEdit = false }) => {
 
     // Send to backend API using FormData (for file upload support)
     try {
-      const response = await studentapi.createStudent(fd)
-      console.log('✅ Submission response:', response)
-      if (response) {
-        toast.success('Student admission submitted successfully!')
+      let response
+      
+      if (isEditMode && (formData._id || editId)) {
+        // Update existing student
+        const studentId = formData._id || editId
+        response = await studentapi.updateStudent(studentId, fd)
+        console.log('✅ Update response:', response)
+        
+        if (response?.status === 'SUCCESS') {
+          toast.success('Student details updated successfully!')
+          
+          // Clear localStorage
+          if (typeof window !== 'undefined') {
+            localStorage.removeItem('admissionForm')
+            localStorage.removeItem('admissionFormPayload')
+            localStorage.removeItem('student')
+          }
+          
+          // Redirect to student details page
+          router.push(`/(education)/students/details/${studentId}`)
+        } else {
+          toast.error('Update failed. Check console for details.')
+        }
       } else {
-        toast.error('Submission failed. Check console for details.')
+        // Create new student
+        response = await studentapi.createStudent(fd)
+        console.log('✅ Submission response:', response)
+        
+        if (response?.status === 'SUCCESS') {
+          toast.success('Student admission submitted successfully!')
+          
+          // Clear localStorage
+          if (typeof window !== 'undefined') {
+            localStorage.removeItem('admissionForm')
+            localStorage.removeItem('admissionFormPayload')
+          }
+          
+          // Reset form to default values
+          setFormData(defaultFormData)
+          setIsSameAddress(false)
+          setAdditionalAcademicLevels([])
+          setPasswordEdited(false)
+          setFieldErrors({
+            aadhaarNumber: '',
+            mobile1: '',
+            emailAddress: '',
+            regNo: ''
+          })
+          
+          // Redirect to student details page with the new student ID
+          const studentId = response?.data?.id || response?.data?._id
+          if (studentId) {
+            router.push(`/(education)/students/details/${studentId}`)
+          } else {
+            // Fallback to student list if no ID returned
+            router.push('/(education)/students/list')
+          }
+        } else {
+          toast.error('Submission failed. Check console for details.')
+        }
       }
     } catch (err) {
-      console.error('❌ Failed to submit admission:', err)
-      toast.error('Failed to submit admission: ' + (err.message || 'Unknown error'))
+      console.error('❌ Failed to submit:', err)
+      toast.error(`Failed to ${isEditMode ? 'update' : 'submit'}: ` + (err.message || 'Unknown error'))
     }
   }
 
@@ -1051,10 +1340,19 @@ const Admission = ({ initialData = null, isEdit = false }) => {
           {/* Header */}
           <div className="bg-white rounded-lg shadow-md p-6 mb-6">
             <h1 className="text-2xl font-bold text-gray-800">
-              {isEdit ? 'Edit Student Details' : 'New Student Admission'}
+              {isEditMode ? 'Edit Student Details' : 'New Student Admission'}
             </h1>
           </div>
 
+          {/* Loading state for edit mode */}
+          {loadingStudent ? (
+            <div className="bg-white rounded-lg shadow-md p-12 flex items-center justify-center">
+              <div className="flex flex-col items-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+                <p className="mt-4 text-gray-600">Loading student data...</p>
+              </div>
+            </div>
+          ) : (
           <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-md p-6">
             {/* Applicant Personal Details */}
             <div className="mb-8">
@@ -1695,10 +1993,11 @@ const Admission = ({ initialData = null, isEdit = false }) => {
                 type="submit"
                 className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none cursor-pointer focus:ring-2 focus:ring-blue-500 outline-none"
               >
-                {isEdit ? 'Update Student' : 'Submit Admission'}
+                {isEditMode ? 'Update Student' : 'Submit Admission'}
               </button>
             </div>
           </form>
+          )}
         </div>
       </div>
     </Layout>

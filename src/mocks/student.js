@@ -135,6 +135,48 @@ class StudentApi{
         console.error('❌ Get Student API Error:', error.response?.data || error.message);
         throw error;
       }
+    }
+
+    /**
+     * Update student by ID
+     * @param {string} id - Student ID
+     * @param {FormData|Object} studentData - Updated student data
+     * @returns {Promise<Object>}
+     */
+    async updateStudent(id, studentData) {
+      try {
+        const isFormData = typeof FormData !== 'undefined' && studentData instanceof FormData
+
+        console.log('📤 Sending to API: /userapp/students/update/' + id)
+        console.log('📦 Data type:', isFormData ? 'FormData' : 'JSON')
+        
+        // Log FormData contents if it's FormData
+        if (isFormData) {
+          console.log('📋 FormData entries:')
+          for (let [key, value] of studentData.entries()) {
+            if (value instanceof File) {
+              console.log(`  ${key}: [File] ${value.name} (${value.size} bytes)`)
+            } else {
+              console.log(`  ${key}: ${value}`)
+            }
+          }
+        }
+
+        const response = await axiosInstance.put(
+          `/userapp/students/update/${id}`,
+          studentData
+        );
+
+        console.log('📥 API Response:', response.data)
+
+        if (response.data.status === 'SUCCESS') {
+          return response.data;
+        }
+        return false;
+      } catch (error) {
+        console.error('❌ Update Student API Error:', error.response?.data || error.message);
+        throw error;
+      }
     } 
 
 //     async updateUser(id:any,data:any){

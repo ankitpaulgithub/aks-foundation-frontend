@@ -159,6 +159,16 @@ const StudentDetails = () => {
     'payments', 'files'
   ]), [])
 
+  // Convert camelCase/snake_case to readable label
+  const formatFieldLabel = (key) => {
+    if (!key) return ''
+    return key
+      ?.replace(/([A-Z])/g, ' $1') // camelCase to spaces
+      ?.replace(/_/g, ' ') // snake_case to spaces
+      ?.replace(/^\w/, (c) => c?.toUpperCase()) // capitalize first letter
+      ?.trim()
+  }
+
   // Detect additional fields from API response
   const additionalFields = useMemo(() => {
     const rawData = studentData?._rawData || {}
@@ -181,16 +191,6 @@ const StudentDetails = () => {
     
     return extraFields
   }, [studentData, knownFieldKeys])
-
-  // Convert camelCase/snake_case to readable label
-  const formatFieldLabel = (key) => {
-    if (!key) return ''
-    return key
-      ?.replace(/([A-Z])/g, ' $1') // camelCase to spaces
-      ?.replace(/_/g, ' ') // snake_case to spaces
-      ?.replace(/^\w/, (c) => c?.toUpperCase()) // capitalize first letter
-      ?.trim()
-  }
 
   const handleEdit = (data) => {
     try {
