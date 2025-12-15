@@ -4,7 +4,7 @@ import { useRouter } from 'next/router'
 import Layout from '../../../../components/education/Layout'
 import axios from 'axios'
 import toast from 'react-hot-toast'
-import { bankOptions , documentFields, occupationOptions, areaOptions, bloodGroupOptions, categoryOptions , maritalStatusOptions, addressFields, personalDetailsFields, officeUseOnly2Fields, officeUseOnlyFields,bankDetailFields,courseOptions, genderOptions, mobileFields, otherCourseOptions, programOptions } from '../../../../constants/BankOptions'
+import { bankOptions , documentFields, occupationOptions, areaOptions, bloodGroupOptions, categoryOptions , maritalStatusOptions, addressFields, personalDetailsFields, officeUseOnly2Fields, officeUseOnlyFields,bankDetailFields,courseOptions, genderOptions, mobileFields, otherCourseOptions, programOptions, boardOptions } from '../../../../constants/BankOptions'
 import { studentapi } from '../../../../mocks/student'
 
 
@@ -27,10 +27,10 @@ const Admission = ({ initialData = null }) => {
     { 
       name: 'paymentAmount', 
       label: 'Payment Amount (₹)', 
-      placeholder: 'Enter payment amount in ₹', 
-      type: 'number', 
-      min: '0', 
-      step: '0.01' 
+      placeholder: 'Enter payment amount (max 4 digits)', 
+      type: 'text', 
+      pattern: '[0-9]{1,4}',
+      maxLength: '4'
     },
     { 
       name: 'paymentDate', 
@@ -54,13 +54,27 @@ const Admission = ({ initialData = null }) => {
   const conditionalCertificates = [
     {
       name: 'tenthCertificate',
-      show: (courseName) => courseName && courseName !== '10th',
+      // 10th certificate required for all qualifications (10th, 12th, Graduation, Post Graduation)
+      show: (courseName) => courseName && ['10th', '12th', 'Graduation', 'Post Graduation'].includes(courseName),
       label: '10th Certificate'
     },
     {
       name: 'twelfthCertificate',
-      show: (courseName) => courseName && courseName !== '10th' && !courseName.startsWith('12th'),
+      // 12th certificate required for 12th, Graduation, Post Graduation
+      show: (courseName) => courseName && ['12th', 'Graduation', 'Post Graduation'].includes(courseName),
       label: '12th Certificate'
+    },
+    {
+      name: 'graduationCertificate',
+      // Graduation certificate required for Graduation, Post Graduation
+      show: (courseName) => courseName && ['Graduation', 'Post Graduation'].includes(courseName),
+      label: 'Graduation Certificate'
+    },
+    {
+      name: 'postGraduationCertificate',
+      // Post Graduation certificate required for Post Graduation only
+      show: (courseName) => courseName && courseName === 'Post Graduation',
+      label: 'Post Graduation Certificate'
     }
   ]
 
@@ -69,8 +83,8 @@ const Admission = ({ initialData = null }) => {
       key: 'class10', title: 'Class 10th Information', alwaysRequired: true, fields: [
         { name: 'class10PassingYear', label: 'Passing Year', placeholder: 'e.g., 2020',pattern: '[0-9]{4}', maxLength: '4', type: 'number' },
         { name: 'class10RollNo', label: 'Roll No.', placeholder: 'e.g., 0000000', pattern: '[0-9]{7}', maxLength: '7', type: 'number' },
-        { name: 'class10RollCode', label: 'Roll Code', placeholder: 'e.g., 0000000', pattern: '[0-9]{7}', maxLength: '7', type: 'number' },
-        { name: 'class10Board', label: 'Board', placeholder: 'e.g., CBSE, ICSE, State Board etc.' },
+        { name: 'class10RollCode', label: 'Roll Code', placeholder: 'e.g., 00000', pattern: '[0-9]{5}', maxLength: '5', type: 'number' },
+        { name: 'class10Board', label: 'Board', type: 'select' },
         { name: 'class10Marks', label: 'Marks/Division', placeholder: 'e.g., 90', type: 'number', pattern: '[0-9]{1,3}', maxLength: '3' },
         { name: 'class10TotalMarks', label: 'Total Marks', placeholder: 'e.g., 90', type: 'number', pattern: '[0-9]{1,3}', maxLength: '3' },
         { name: 'class10Percentage', label: 'Percentage', placeholder: 'e.g., 90' },
@@ -81,25 +95,25 @@ const Admission = ({ initialData = null }) => {
     {
       key: 'class12', title: 'Class 12th Information', requiredFor: ['12th', 'Graduation', 'Post Graduation'], fields: [
         { name: 'class12PassingYear', label: 'Passing Year', placeholder: 'e.g., 2022', pattern: '[0-9]{4}', maxLength: '4', type: 'number' },
-        { name: 'class12RollNo', label: 'Roll No.', placeholder: 'e.g., 0000000', pattern: '[0-9]{7}', maxLength: '7', type: 'number' },
+        { name: 'class12RollNo', label: 'Roll No.', placeholder: 'e.g., 00000000', pattern: '[0-9]{8}', maxLength: '8', type: 'number' },
         { name: 'class12SchoolName', label: 'School Name', placeholder: 'School name' },
         { name: 'class12SchoolAddress', label: 'School Address', placeholder: 'School Address' },
         { name: 'class12Marks', label: 'Marks/Division', placeholder: 'e.g., 90', type: 'number', pattern: '[0-9]{1,3}', maxLength: '3' },
         { name: 'class12TotalMarks', label: 'Total Marks', placeholder: 'e.g., 90' , type: 'number', pattern: '[0-9]{1,3}', maxLength: '3' },
         { name: 'class12Percentage', label: 'Percentage', placeholder: 'e.g., 90' },
-        { name: 'class12Board', label: 'Board', placeholder: 'e.g., CBSE, ICSE, State Board etc.' },
-        { name: 'class12RollCode', label: 'Roll Code', placeholder: 'e.g., 0000000', pattern: '[0-9]{7}', maxLength: '7', type: 'number' }
+        { name: 'class12Board', label: 'Board', type: 'select' },
+        { name: 'class12RollCode', label: 'Roll Code', placeholder: 'e.g., 00000', pattern: '[0-9]{5}', maxLength: '5', type: 'number' }
       ]
     },
     {
       key: 'graduation', title: 'Graduation Information', requiredFor: ['Graduation', 'Post Graduation'], fields: [
         { name: 'graduationSessionYear', label: 'Passing Year', placeholder: 'e.g., 2021', pattern: '[0-9]{4}', maxLength: '4', type: 'number' },
         { name: 'graduationRollNo', label: 'Roll No.', placeholder: 'e.g., 0000000', pattern: '[0-9]{7}', maxLength: '7', type: 'number' },
-        { name: 'graduationRollCode', label: 'Roll Code', placeholder: 'e.g., 0000000', pattern: '[0-9]{7}', maxLength: '7', type: 'number' },
+        { name: 'graduationRollCode', label: 'Roll Code', placeholder: 'e.g., 00000', pattern: '[0-9]{5}', maxLength: '5', type: 'number' },
         { name: 'graduationMarks', label: 'Marks/Division', placeholder: 'e.g., 90', type: 'number', pattern: '[0-9]{1,3}', maxLength: '3' },
         { name: 'graduationTotalMarks', label: 'Total Marks', placeholder: 'e.g., 90' , type: 'number', pattern: '[0-9]{1,3}', maxLength: '3' },
         { name: 'graduationPercentage', label: 'Percentage', placeholder: 'e.g., 90' },
-        { name: 'graduationBoard', label: 'Board', placeholder: 'e.g., CBSE, ICSE, State Board etc.' },
+        { name: 'graduationBoard', label: 'Board', type: 'select' },
         { name: 'graduationSchoolName', label: 'College/University Name', placeholder: 'College/University name' },
         { name: 'graduationSchoolAddress', label: 'College/University Address', placeholder: 'College/University Address' }
       ]
@@ -140,16 +154,16 @@ const Admission = ({ initialData = null }) => {
     bankName: '', bankNameOther: '', accountNumber: '', branchName: '', ifscCode: '',
 
     // Documents
-  studentImage: '', bankPasbook: '', residentialCertificate: '', provisionalCertificate: '', aadhaarFront: '', aadhaarBack: '', drccReceipt: '', tenthCertificate: '', twelfthCertificate: '',
+  studentImage: '', bankPasbook: '', residentialCertificate: '', provisionalCertificate: '', aadhaarFront: '', aadhaarBack: '', drccReceipt: '', tenthCertificate: '', twelfthCertificate: '', graduationCertificate: '', postGraduationCertificate: '',
     counselorSignature: '', applicantSignature: '',
 
     // Additional fields
     otherCourseName: '',
 
     // Office Use Only fields
-    regNo: '', regDate: '', program: '', payment: '', paymentDate: '',
+    regNo: '', regDate: '', program: '',
     drccVerificationDate: '', learnerCode: '', batchStartDate: '', batch: '',
-    batchCode: '', batchTime1: '', batchTime2: '', remarks: '',
+    batchEndDate: '', batchTime1: '', batchTime2: '', remarks: '',
 
     // Office Use Only 2 fields
     enrollmentNo: '', enrollmentDate: '', program2: '', courseDuration: '',
@@ -359,9 +373,16 @@ const Admission = ({ initialData = null }) => {
     const PREFIX = "CM7RKYP-"
     const PREFIX2 = "CM7RSHA-"
     
-    // Check if regNo has prefix, if not add it
-    const formattedRegNo = regNo.startsWith(PREFIX) ? regNo : (regNo ? PREFIX + regNo.replace(/^CM7R[A-Z]{3}-/, '') : PREFIX)
-    const formattedEnrollmentNo = regNo.startsWith(PREFIX2) ? regNo : (regNo ? PREFIX2 + regNo.replace(/^CM7R[A-Z]{3}-/, '') : PREFIX2)
+    // Extract numeric part from registration number (remove any prefix like CM7RKYP- or CM7RSHA-)
+    let numericPart = ''
+    if (regNo) {
+      // Remove prefix pattern CM7R followed by 3 letters and a hyphen
+      numericPart = regNo.replace(/^CM7R[A-Z]{3}-/, '')
+    }
+    
+    // Format both regNo and enrollmentNo with their respective prefixes
+    const formattedRegNo = numericPart ? PREFIX + numericPart : PREFIX
+    const formattedEnrollmentNo = numericPart ? PREFIX2 + numericPart : PREFIX2
     
     return {
       // Applicant Details
@@ -461,6 +482,8 @@ const Admission = ({ initialData = null }) => {
       drccReceipt: a.files?.drccReceipt || '',
       tenthCertificate: a.files?.tenthCertificate || '',
       twelfthCertificate: a.files?.twelfthCertificate || '',
+      graduationCertificate: a.files?.graduationCertificate || '',
+      postGraduationCertificate: a.files?.postGraduationCertificate || '',
       counselorSignature: a.files?.counselorSignature || '',
       applicantSignature: a.files?.applicantSignature || '',
 
@@ -475,7 +498,7 @@ const Admission = ({ initialData = null }) => {
       learnerCode: a.learnerCode || '',
       batchStartDate: a.batchStartDate || '',
       batch: a.batch || '',
-      batchCode: a.batchCode || '',
+      batchEndDate: a.batchEndDate || '',
       batchTime1: a.batchTime1 || '',
       batchTime2: a.batchTime2 || '',
       remarks: a.remarks || '',
@@ -528,6 +551,20 @@ const Admission = ({ initialData = null }) => {
     setFormData(prev => {
       // sanitize specific fields before updating
       let sanitizedValue = value
+      
+      // Fields that should NOT be converted to uppercase
+      const noUppercaseFields = [
+        'emailAddress', 'password', 'paymentDate', 'dateOfBirth', 'regDate', 
+        'drccVerificationDate', 'batchStartDate', 'batchEndDate', 'enrollmentDate', 
+        'dateOfIssue', 'batchTime', 'batchTime1', 'batchTime2'
+      ]
+      
+      // Convert to uppercase for text fields (except excluded ones)
+      if (typeof value === 'string' && !noUppercaseFields.includes(field) && 
+          !field.includes('Certificate') && !field.includes('Image') && !field.includes('Signature')) {
+        sanitizedValue = value.toUpperCase()
+      }
+      
       if (field === 'ifscCode') {
         // Enforce IFSC format progressively: first 4 letters (A-Z), then up to 7 digits
         sanitizedValue = String(value || '').toUpperCase().replace(/[^A-Z0-9]/g, '')
@@ -805,6 +842,7 @@ const Admission = ({ initialData = null }) => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-1 p-1">
             {level.fields.map(field => {
             const isPercentage = isPercentageField(field.name)
+            const isSelectField = field.type === 'select'
             // Use stored percentage value, or calculate if not available
             const percentageValue = isPercentage 
               ? (formData[field.name] || calculatePercentage(level.key))
@@ -815,33 +853,47 @@ const Admission = ({ initialData = null }) => {
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   {field.label} <span className="text-red-500">*</span>
                 </label>
-                <input
-                  type="text"
-                  required={!isPercentage}
-                  disabled={isPercentage}
-                  readOnly={isPercentage}
-                  maxLength={field.maxLength}
-                  pattern={field.pattern}
-                  value={isPercentage ? percentageValue : (formData[field.name] || '')}
-                  onChange={(e) => {
-                    if (isPercentage) return
-                    let value = e.target.value || ''
-                    // If pattern expects digits only, strip non-digits
-                    if (field.pattern && field.pattern.includes('0-9')) {
-                      value = value.replace(/\D/g, '')
-                    }
-                    // If pattern expects uppercase letters (like IFSC), uppercase and strip invalid chars
-                    if (field.pattern && field.pattern.includes('A-Z')) {
-                      value = value.toUpperCase().replace(/[^A-Z0-9]/g, '')
-                    }
-                    if (field.maxLength) value = value.slice(0, field.maxLength)
-                    handleInputChange(field.name, value)
-                  }}
-                  className={`w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent ${
-                    isPercentage ? 'bg-gray-100 cursor-not-allowed' : ''
-                  }`}
-                  placeholder={field.placeholder}
-                />
+                {isSelectField ? (
+                  <select
+                    required
+                    value={formData[field.name] || ''}
+                    onChange={(e) => handleInputChange(field.name, e.target.value)}
+                    className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent"
+                  >
+                    <option value="">Select Board</option>
+                    {boardOptions.map(option => (
+                      <option key={option.value} value={option.value}>{option.label}</option>
+                    ))}
+                  </select>
+                ) : (
+                  <input
+                    type="text"
+                    required={!isPercentage}
+                    disabled={isPercentage}
+                    readOnly={isPercentage}
+                    maxLength={field.maxLength}
+                    pattern={field.pattern}
+                    value={isPercentage ? percentageValue : (formData[field.name] || '')}
+                    onChange={(e) => {
+                      if (isPercentage) return
+                      let value = e.target.value || ''
+                      // If pattern expects digits only, strip non-digits
+                      if (field.pattern && field.pattern.includes('0-9')) {
+                        value = value.replace(/\D/g, '')
+                      }
+                      // If pattern expects uppercase letters (like IFSC), uppercase and strip invalid chars
+                      if (field.pattern && field.pattern.includes('A-Z')) {
+                        value = value.toUpperCase().replace(/[^A-Z0-9]/g, '')
+                      }
+                      if (field.maxLength) value = value.slice(0, field.maxLength)
+                      handleInputChange(field.name, value)
+                    }}
+                    className={`w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent ${
+                      isPercentage ? 'bg-gray-100 cursor-not-allowed' : ''
+                    }`}
+                    placeholder={field.placeholder}
+                  />
+                )}
               </div>
             )
           })}
@@ -916,10 +968,19 @@ const Admission = ({ initialData = null }) => {
                     type={field.type}
                     value={formData[field.name] || ''}
                     maxLength={field?.maxLength}
-                    initialvalue={field?.initialvalue}
-                    onChange={(e) => handleInputChange(field.name, e.target.value)}
+                    pattern={field?.pattern}
+                    onChange={(e) => {
+                      // For learnerCode, only allow digits and max 16 characters
+                      if (field.name === 'learnerCode') {
+                        const value = e.target.value.replace(/\D/g, '').slice(0, 16)
+                        handleInputChange(field.name, value)
+                      } else {
+                        handleInputChange(field.name, e.target.value)
+                      }
+                    }}
                     className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent"
                     placeholder={field.placeholder}
+                    inputMode={field.name === 'learnerCode' ? 'numeric' : undefined}
                   />
                 </>
               )
@@ -1112,8 +1173,16 @@ const Admission = ({ initialData = null }) => {
       }
     })
 
-    // Add registrationNo (use regNo first, fallback to enrollmentNo)
-    const registrationNo = formData.regNo || formData.enrollmentNo || ''
+    // Add registrationNo (use regNo first, fallback to enrollmentNo - both have same numeric part)
+    // Extract the full registration number from whichever field has value
+    let registrationNo = ''
+    if (formData.regNo && formData.regNo.length > 8) {
+      registrationNo = formData.regNo
+    } else if (formData.enrollmentNo && formData.enrollmentNo.length > 8) {
+      // If only enrollmentNo has value, convert it to regNo format
+      const numericPart = formData.enrollmentNo.replace(/^CM7R[A-Z]{3}-/, '')
+      registrationNo = 'CM7RKYP-' + numericPart
+    }
     if (registrationNo && !addedKeys.has('registrationNo')) {
       fd.append('registrationNo', String(registrationNo))
       addedKeys.add('registrationNo')
@@ -1140,7 +1209,13 @@ const Admission = ({ initialData = null }) => {
     }
 
     // Append all file fields (if File object present) using their field names
-    const fileFieldNames = ['studentImage','bankPasbook','residentialCertificate','provisionalCertificate','aadhaarFront','aadhaarBack','drccReceipt','tenthCertificate','twelfthCertificate','disabilityCertificate','counselorSignature','applicantSignature']
+    const fileFieldNames = ['studentImage','bankPasbook','residentialCertificate','provisionalCertificate','aadhaarFront','aadhaarBack','drccReceipt','tenthCertificate','twelfthCertificate','graduationCertificate','postGraduationCertificate','disabilityCertificate','counselorSignature','applicantSignature']
+    
+    // Add additional academic level certificate fields
+    additionalAcademicLevels.forEach(level => {
+      fileFieldNames.push(`${level.key}Certificate`)
+    })
+    
     fileFieldNames.forEach(name => {
       const file = formData[name]
       if (file) {
@@ -1917,6 +1992,22 @@ const Admission = ({ initialData = null }) => {
                   </div>
                 ))}
 
+                {/* Additional Academic Level Certificates */}
+                {additionalAcademicLevels.map((level) => (
+                  <div key={`cert_${level.key}`} className="bg-orange-50 p-3 rounded">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      {formData[`${level.key}Title`] || 'Additional Academic'} Certificate <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="file"
+                      required
+                      accept=".pdf,.jpg,.jpeg,.png"
+                      onChange={(e) => handleInputChange(`${level.key}Certificate`, e.target.files[0] || null)}
+                      className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent"
+                    />
+                  </div>
+                ))}
+
                 {/* Disability Certificate - Conditional */}
                 {formData.isPwD && (
                   <div className="bg-orange-50 p-3 rounded">
@@ -1969,11 +2060,20 @@ const Admission = ({ initialData = null }) => {
                         ? (formData[field.name] || new Date().toISOString())
                         : (formData[field.name] || '')
                       }
-                      onChange={(e) => handleInputChange(field.name, e.target.value)}
+                      onChange={(e) => {
+                        // For paymentAmount, only allow digits and max 4 characters
+                        if (field.name === 'paymentAmount') {
+                          const value = e.target.value.replace(/\D/g, '').slice(0, 4)
+                          handleInputChange(field.name, value)
+                        } else {
+                          handleInputChange(field.name, e.target.value)
+                        }
+                      }}
                       className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent"
                       placeholder={field.placeholder}
-                      min={field.min}
-                      step={field.step}
+                      maxLength={field.maxLength}
+                      pattern={field.pattern}
+                      inputMode={field.name === 'paymentAmount' ? 'numeric' : undefined}
                     />
                   </div>
                 ))}
