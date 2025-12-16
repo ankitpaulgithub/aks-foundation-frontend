@@ -578,7 +578,12 @@ const Admission = ({ initialData = null }) => {
       const noUppercaseFields = [
         'emailAddress', 'password', 'paymentDate', 'dateOfBirth', 'regDate', 
         'drccVerificationDate', 'batchStartDate', 'batchEndDate', 'enrollmentDate', 
-        'dateOfIssue', 'batchTime', 'batchTime1', 'batchTime2'
+        'dateOfIssue', 'batchTime', 'batchTime1', 'batchTime2',
+        // Select/Radio fields with mixed case values
+        'gender', 'maritalStatus', 'area', 'category', 'courseName', 'studentProgram',
+        'otherCourseName', 'fatherOccupation', 'bloodGroup', 'bankName', 'state', 'district',
+        // Board fields (select dropdowns)
+        'class10Board', 'class12Board', 'graduationBoard'
       ]
       
       // Convert to uppercase for text fields (except excluded ones)
@@ -769,7 +774,7 @@ const Admission = ({ initialData = null }) => {
       </label>
       <select
         required={field.required}
-        value={formData[field.name]}
+        value={formData[field.name] || ''}
         onChange={(e) => handleInputChange(field.name, e.target.value)}
         className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent"
       >
