@@ -18,6 +18,7 @@ const Admission = ({ initialData = null }) => {
   const [districtData, setDistrictData] = useState([])
   const [loadingStates, setLoadingStates] = useState(false)
   const [loadingDistricts, setLoadingDistricts] = useState(false)
+  const [pendingDistrict, setPendingDistrict] = useState(null) // To store district value while loading
 
   const batchMonths = [ 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'June', 'July', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec' ]
   const batchYears = [ 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026, 2027, 2028, 2029, 2030 ]
@@ -281,11 +282,15 @@ const Admission = ({ initialData = null }) => {
     try {
       const response = await axios.get(`https://www.india-location-hub.in/api/districts?state_code=${stateCode}`)
       if (response.data?.success && response.data?.districts) {
-        setDistrictData(response.data.districts.sort((a, b) => a.name.localeCompare(b.name)))
+        const sortedDistricts = response.data.districts.sort((a, b) => a.name.localeCompare(b.name))
+        setDistrictData(sortedDistricts)
+        return sortedDistricts
       }
+      return []
     } catch (error) {
       console.error('Failed to fetch districts', error)
       toast.error('Failed to fetch districts. Please try again.')
+      return []
     } finally {
       setLoadingDistricts(false)
     }
@@ -336,14 +341,31 @@ const Admission = ({ initialData = null }) => {
         
         // Map API data to form data structure
         const mappedFormData = mapApiDataToFormData(studentData)
-        setFormData(mappedFormData)
         
-        // If state is present, fetch districts
-        if (studentData.state) {
-          const stateOption = stateData.find(s => s.name === studentData.state)
-          if (stateOption) {
-            fetchDistrictData(stateOption.state_code)
+        // If state is present, fetch districts first, then set form data with district
+        if (studentData.stateCode || studentData.state) {
+          let stateCode = studentData.stateCode
+          
+          // If we only have state name, find the code from stateData
+          if (!stateCode && studentData.state) {
+            const stateOption = stateData.find(s => s.name === studentData.state)
+            stateCode = stateOption?.code
           }
+          
+          if (stateCode) {
+            // Fetch districts and wait for completion
+            const districts = await fetchDistrictData(stateCode)
+            
+            // Now set form data - district value will be available since districtData is loaded
+            setFormData({
+              ...mappedFormData,
+              district: studentData.district || ''
+            })
+          } else {
+            setFormData(mappedFormData)
+          }
+        } else {
+          setFormData(mappedFormData)
         }
         
         toast.success('Student data loaded for editing')
