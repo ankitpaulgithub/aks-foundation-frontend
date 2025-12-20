@@ -57,6 +57,9 @@ const StudentDetails = () => {
       name: fullName || 'Not provided',
       nameAsSSC: a?.nameAsSSC || fullName || 'Not provided',
       mobile: a?.mobileNo1 || 'Not provided',
+      mobile2: a?.mobileNo2 || '',
+      mobile3: a?.mobileNo3 || '',
+      whatsapp: a?.whatsappNo1 || '',
       gender: a?.gender || 'Not provided',
       dateOfBirth: a?.dateOfBirth || '',
       category: a?.category || 'Not provided',
@@ -65,7 +68,8 @@ const StudentDetails = () => {
       maritalStatus: a?.maritalStatus || 'Not provided',
       registrationNo: a?.registrationNo || 'Not provided',
       aadhaarNo: a?.aadhaarNo || 'Not provided',
-      isPwD: a?.isPwD || 'Not provided',
+      isPwD: a?.isPwD,
+      disabilityType: a?.disabilityType || '',
       isActive: a?.isActive,
 
       // Address
@@ -73,6 +77,7 @@ const StudentDetails = () => {
       permanentAddress: a?.permanentAddress || 'Not provided',
       area: a?.area || 'Not provided',
       state: a?.state || 'Not provided',
+      stateCode: a?.stateCode || '',
       district: a?.district || 'Not provided',
       villageName: a?.villageName || 'Not provided',
       pincode: a?.pincode || 'Not provided',
@@ -83,9 +88,15 @@ const StudentDetails = () => {
       qualification: a?.qualification || 'Not provided',
       program: a?.program || 'Not provided',
       specificCourseName: a?.specificCourseName || 'Not provided',
+      sessionYear: a?.sessionYear || '',
       batchName: a?.batchName || 'Not provided',
       batchMonth: a?.batchMonth || '',
       batchYear: a?.batchYear || '',
+      batchTime: a?.batchTime || '',
+      batchStartDate: a?.batchStartDate || '',
+      batchEndDate: a?.batchEndDate || '',
+      batchTime1: a?.batchTime1 || '',
+      batchTime2: a?.batchTime2 || '',
 
       // Class 10th Details
       class10PassingYear: a?.class10PassingYear || '',
@@ -108,16 +119,62 @@ const StudentDetails = () => {
       class12TotalMarks: a?.class12TotalMarks || '',
       class12Percentage: a?.class12Percentage || '',
       class12Board: a?.class12Board || '',
+      class12Stream: a?.class12Stream || '',
+
+      // Graduation Details
+      graduationSessionYear: a?.graduationSessionYear || '',
+      graduationRollNo: a?.graduationRollNo || '',
+      graduationRollCode: a?.graduationRollCode || '',
+      graduationMarks: a?.graduationMarks || '',
+      graduationTotalMarks: a?.graduationTotalMarks || '',
+      graduationPercentage: a?.graduationPercentage || '',
+      graduationStream: a?.graduationStream || '',
+      graduationCollegeName: a?.graduationCollegeName || '',
+      graduationCollegeAddress: a?.graduationCollegeAddress || '',
+      graduationUniversityNameAddress: a?.graduationUniversityNameAddress || '',
+
+      // Post Graduation Details
+      postGraduationSessionYear: a?.postGraduationSessionYear || '',
+      postGraduationRollNo: a?.postGraduationRollNo || '',
+      postGraduationRollCode: a?.postGraduationRollCode || '',
+      postGraduationMarks: a?.postGraduationMarks || '',
+      postGraduationTotalMarks: a?.postGraduationTotalMarks || '',
+      postGraduationPercentage: a?.postGraduationPercentage || '',
+      postGraduationStream: a?.postGraduationStream || '',
+      postGraduationCollegeName: a?.postGraduationCollegeName || '',
+      postGraduationCollegeAddress: a?.postGraduationCollegeAddress || '',
+      postGraduationUniversityNameAddress: a?.postGraduationUniversityNameAddress || '',
 
       // Bank Details
       bankName: a?.bankName || 'Not provided',
       accountNumber: a?.accountNumber || 'Not provided',
       branchName: a?.branchName || 'Not provided',
+      ifscCode: a?.ifscCode || '',
 
       // Parent Details
       fatherName: a?.fathersName || 'Not provided',
       motherName: a?.mothersName || 'Not provided',
       fatherOccupation: a?.fatherOccupation || 'Not provided',
+
+      // Office Use Only
+      regDate: a?.regDate || '',
+      drccVerificationDate: a?.drccVerificationDate || '',
+      learnerCode: a?.learnerCode || '',
+      batch: a?.batch || '',
+      remarks: a?.remarks || '',
+
+      // Course Details (for DCA/ADCA)
+      courseEnrollmentNo: a?.courseEnrollmentNo || '',
+      program2: a?.program2 || '',
+      courseDuration: a?.courseDuration || '',
+      certificateNo: a?.certificateNo || '',
+      dateOfIssue: a?.dateOfIssue || '',
+      remarks2: a?.remarks2 || '',
+
+      // Payment Details
+      paymentMethod: a?.paymentMethod || '',
+      utrNumber: a?.utrNumber || '',
+      paymentDatetime: a?.paymentDatetime || '',
 
       // Payments
       payments: a?.payments || [],
@@ -138,23 +195,37 @@ const StudentDetails = () => {
     // System fields to exclude
     '_id', 'id', '__v', 'createdAt', 'updatedAt', 'isDeleted', 'addedBy', 'isAppUser', 'password',
     // Basic Info
-    'firstName', 'middleName', 'lastName', 'nameAsSSC', 'mobileNo1', 'gender', 'dateOfBirth',
-    'category', 'email', 'bloodGroup', 'maritalStatus', 'registrationNo', 'aadhaarNo', 'isPwD', 'isActive',
+    'firstName', 'middleName', 'lastName', 'nameAsSSC', 'mobileNo1', 'mobileNo2', 'mobileNo3', 'whatsappNo1',
+    'gender', 'dateOfBirth', 'category', 'email', 'bloodGroup', 'maritalStatus', 'registrationNo', 
+    'aadhaarNo', 'isPwD', 'disabilityType', 'isActive',
     // Address
-    'address', 'permanentAddress', 'area', 'state', 'district', 'villageName', 'pincode', 
+    'address', 'permanentAddress', 'area', 'state', 'stateCode', 'district', 'villageName', 'pincode', 
     'blockNagarNigam', 'postOffice',
     // Program & Course
-    'qualification', 'program', 'specificCourseName', 'batchName', 'batchMonth', 'batchYear',
+    'qualification', 'program', 'specificCourseName', 'sessionYear', 'batchName', 'batchMonth', 'batchYear',
+    'batchTime', 'batchStartDate', 'batchEndDate', 'batchTime1', 'batchTime2',
     // Class 10th
     'class10PassingYear', 'class10RollNo', 'class10RollCode', 'class10SchoolName', 
     'class10SchoolAddress', 'class10Marks', 'class10TotalMarks', 'class10Percentage', 'class10Board',
     // Class 12th
     'class12PassingYear', 'class12RollNo', 'class12RollCode', 'class12SchoolName',
-    'class12SchoolAddress', 'class12Marks', 'class12TotalMarks', 'class12Percentage', 'class12Board',
+    'class12SchoolAddress', 'class12Marks', 'class12TotalMarks', 'class12Percentage', 'class12Board', 'class12Stream',
+    // Graduation
+    'graduationSessionYear', 'graduationRollNo', 'graduationRollCode', 'graduationMarks', 'graduationTotalMarks',
+    'graduationPercentage', 'graduationStream', 'graduationCollegeName', 'graduationCollegeAddress', 'graduationUniversityNameAddress',
+    // Post Graduation
+    'postGraduationSessionYear', 'postGraduationRollNo', 'postGraduationRollCode', 'postGraduationMarks', 'postGraduationTotalMarks',
+    'postGraduationPercentage', 'postGraduationStream', 'postGraduationCollegeName', 'postGraduationCollegeAddress', 'postGraduationUniversityNameAddress',
     // Bank
-    'bankName', 'accountNumber', 'branchName',
+    'bankName', 'accountNumber', 'branchName', 'ifscCode',
     // Parent
     'fathersName', 'mothersName', 'fatherOccupation',
+    // Office Use Only
+    'regDate', 'drccVerificationDate', 'learnerCode', 'batch', 'remarks',
+    // Course Details (DCA/ADCA)
+    'courseEnrollmentNo', 'program2', 'courseDuration', 'certificateNo', 'dateOfIssue', 'remarks2',
+    // Payment
+    'paymentMethod', 'utrNumber', 'paymentDatetime',
     // Special
     'payments', 'files'
   ]), [])
@@ -177,13 +248,31 @@ const StudentDetails = () => {
     Object.keys(rawData)?.forEach((key) => {
       if (!knownFieldKeys?.has(key)) {
         const value = rawData?.[key]
-        // Only show non-empty, non-object values (skip nested objects/arrays)
-        if (value !== null && value !== undefined && value !== '' && 
-            typeof value !== 'object') {
+        // Skip null, undefined, empty strings, and complex nested objects/arrays
+        if (value === null || value === undefined || value === '') return
+        
+        // Handle boolean values - convert to Yes/No
+        if (typeof value === 'boolean') {
+          extraFields?.push({
+            key,
+            label: formatFieldLabel(key),
+            value: value ? 'Yes' : 'No'
+          })
+        }
+        // Handle primitive values (string, number)
+        else if (typeof value !== 'object') {
           extraFields?.push({
             key,
             label: formatFieldLabel(key),
             value: String(value)
+          })
+        }
+        // Handle simple arrays (convert to comma-separated string)
+        else if (Array.isArray(value) && value.length > 0 && typeof value[0] !== 'object') {
+          extraFields?.push({
+            key,
+            label: formatFieldLabel(key),
+            value: value.join(', ')
           })
         }
       }
@@ -280,8 +369,15 @@ const StudentDetails = () => {
     aadhaarFront: 'Aadhaar Front',
     aadhaarBack: 'Aadhaar Back',
     drccReceipt: 'DRCC Receipt',
-    tenthCertificate: '10th Certificate',
-    twelfthCertificate: '12th Certificate',
+    tenthMarksheet: '10th Marksheet',
+    tenthProvisional: '10th Provisional',
+    twelfthMarksheet: '12th Marksheet',
+    twelfthProvisional: '12th Provisional',
+    graduationCertificate: 'Graduation Certificate',
+    postGraduationCertificate: 'Post Graduation Certificate',
+    disabilityCertificate: 'Disability Certificate',
+    counselorSignature: 'Counselor Signature',
+    applicantSignature: 'Applicant Signature',
     signature: 'Signature'
   }
 
@@ -292,12 +388,16 @@ const StudentDetails = () => {
     { label: 'Registration Number', key: 'registrationNo', bold: true },
     { label: 'Date of Birth', key: 'dateOfBirth', format: 'date' },
     { label: 'Mobile Number', key: 'mobile' },
+    { label: 'Mobile 2', key: 'mobile2', conditional: true },
+    { label: 'Mobile 3', key: 'mobile3', conditional: true },
+    { label: 'WhatsApp', key: 'whatsapp', conditional: true },
     { label: 'Email', key: 'emailAddress', breakAll: true },
     { label: 'Category', key: 'category' },
     { label: 'Blood Group', key: 'bloodGroup' },
     { label: 'Marital Status', key: 'maritalStatus' },
     { label: 'Aadhaar Number', key: 'aadhaarNo' },
-    { label: 'Is PwD', key: 'isPwD' }
+    { label: 'Is PwD', key: 'isPwD', format: 'boolean' },
+    { label: 'Disability Type', key: 'disabilityType', conditional: true }
   ]
 
   const parentFields = [
@@ -324,9 +424,15 @@ const StudentDetails = () => {
     { label: 'Qualification', key: 'qualification', bold: true },
     { label: 'Program', key: 'program', bold: true },
     { label: 'Course Name', key: 'specificCourseName', bold: true },
+    { label: 'Session Year', key: 'sessionYear', conditional: true },
     { label: 'Batch Name', key: 'batchName' },
     { label: 'Batch Month', key: 'batchMonth', conditional: true },
-    { label: 'Batch Year', key: 'batchYear', conditional: true }
+    { label: 'Batch Year', key: 'batchYear', conditional: true },
+    { label: 'Batch Time', key: 'batchTime', conditional: true },
+    { label: 'Batch Start Date', key: 'batchStartDate', format: 'date', conditional: true },
+    { label: 'Batch End Date', key: 'batchEndDate', format: 'date', conditional: true },
+    { label: 'Batch Time 1', key: 'batchTime1', conditional: true },
+    { label: 'Batch Time 2', key: 'batchTime2', conditional: true }
   ]
 
   const class10Fields = [
@@ -345,6 +451,7 @@ const StudentDetails = () => {
     { label: 'Roll No', key: 'class12RollNo' },
     { label: 'Roll Code', key: 'class12RollCode' },
     { label: 'Board', key: 'class12Board' },
+    { label: 'Stream', key: 'class12Stream', conditional: true },
     { label: 'School Name', key: 'class12SchoolName' },
     { label: 'School Address', key: 'class12SchoolAddress' },
     { label: 'Marks Obtained', key: 'class12Marks', suffix: 'class12TotalMarks' },
@@ -354,18 +461,76 @@ const StudentDetails = () => {
   const bankFields = [
     { label: 'Bank Name', key: 'bankName' },
     { label: 'Account Number', key: 'accountNumber' },
-    { label: 'Branch Name', key: 'branchName' }
+    { label: 'Branch Name', key: 'branchName' },
+    { label: 'IFSC Code', key: 'ifscCode', conditional: true }
+  ]
+
+  const graduationFields = [
+    { label: 'Session Year', key: 'graduationSessionYear' },
+    { label: 'Roll No', key: 'graduationRollNo' },
+    { label: 'Roll Code', key: 'graduationRollCode' },
+    { label: 'Stream', key: 'graduationStream', conditional: true },
+    { label: 'College Name', key: 'graduationCollegeName' },
+    { label: 'College Address', key: 'graduationCollegeAddress' },
+    { label: 'University Name & Address', key: 'graduationUniversityNameAddress' },
+    { label: 'Marks Obtained', key: 'graduationMarks', suffix: 'graduationTotalMarks' },
+    { label: 'Percentage', key: 'graduationPercentage', format: 'percentage', bold: true }
+  ]
+
+  const postGraduationFields = [
+    { label: 'Session Year', key: 'postGraduationSessionYear' },
+    { label: 'Roll No', key: 'postGraduationRollNo' },
+    { label: 'Roll Code', key: 'postGraduationRollCode' },
+    { label: 'Stream', key: 'postGraduationStream', conditional: true },
+    { label: 'College Name', key: 'postGraduationCollegeName' },
+    { label: 'College Address', key: 'postGraduationCollegeAddress' },
+    { label: 'University Name & Address', key: 'postGraduationUniversityNameAddress' },
+    { label: 'Marks Obtained', key: 'postGraduationMarks', suffix: 'postGraduationTotalMarks' },
+    { label: 'Percentage', key: 'postGraduationPercentage', format: 'percentage', bold: true }
+  ]
+
+  const officeUseFields = [
+    { label: 'Registration Date', key: 'regDate', format: 'date', conditional: true },
+    { label: 'DRCC Verification Date', key: 'drccVerificationDate', format: 'date', conditional: true },
+    { label: 'Learner Code', key: 'learnerCode', conditional: true },
+    { label: 'Batch', key: 'batch', conditional: true },
+    { label: 'Remarks', key: 'remarks', conditional: true }
+  ]
+
+  const courseDetailsFields = [
+    { label: 'Course Enrollment No', key: 'courseEnrollmentNo', conditional: true },
+    { label: 'Program', key: 'program2', conditional: true },
+    { label: 'Course Duration', key: 'courseDuration', conditional: true },
+    { label: 'Certificate No', key: 'certificateNo', conditional: true },
+    { label: 'Date of Issue', key: 'dateOfIssue', format: 'date', conditional: true },
+    { label: 'Remarks', key: 'remarks2', conditional: true }
+  ]
+
+  const paymentDetailsFields = [
+    { label: 'Payment Method', key: 'paymentMethod', conditional: true },
+    { label: 'UTR Number', key: 'utrNumber', conditional: true },
+    { label: 'Payment Date & Time', key: 'paymentDatetime', conditional: true }
   ]
 
   // Reusable field renderer
   const renderField = (field, data) => {
     const value = data?.[field?.key]
-    if (field?.conditional && !value) return null
+    if (field?.conditional && !value && value !== false && value !== 0) return null
     
-    let displayValue = value || 'Not provided'
-    if (field?.format === 'date') displayValue = formatDate(value)
-    if (field?.format === 'percentage') displayValue = value ? `${value}%` : 'Not provided'
-    if (field?.suffix) displayValue = `${value || 'Not provided'} / ${data?.[field?.suffix] || '-'}`
+    let displayValue = value
+    
+    // Handle boolean values - show "Yes" or "No"
+    if (field?.format === 'boolean' || typeof value === 'boolean') {
+      displayValue = value === true ? 'Yes' : value === false ? 'No' : 'Not provided'
+    } else if (field?.format === 'date') {
+      displayValue = formatDate(value)
+    } else if (field?.format === 'percentage') {
+      displayValue = value ? `${value}%` : 'Not provided'
+    } else if (field?.suffix) {
+      displayValue = `${value || 'Not provided'} / ${data?.[field?.suffix] || '-'}`
+    } else {
+      displayValue = value || 'Not provided'
+    }
 
     return (
       <div key={field?.key}>
@@ -568,6 +733,26 @@ const StudentDetails = () => {
                 </div>
               </div>
             )}
+
+            {/* Graduation */}
+            {(studentData?.graduationSessionYear || studentData?.graduationRollNo || studentData?.graduationCollegeName) && (
+              <div className="mb-6">
+                <h3 className="text-lg font-medium text-gray-700 mb-3 bg-gray-50 p-2 rounded">Graduation Details</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {graduationFields?.map((field) => renderField(field, studentData))}
+                </div>
+              </div>
+            )}
+
+            {/* Post Graduation */}
+            {(studentData?.postGraduationSessionYear || studentData?.postGraduationRollNo || studentData?.postGraduationCollegeName) && (
+              <div className="mb-6">
+                <h3 className="text-lg font-medium text-gray-700 mb-3 bg-gray-50 p-2 rounded">Post Graduation Details</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {postGraduationFields?.map((field) => renderField(field, studentData))}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Bank Details */}
@@ -580,6 +765,45 @@ const StudentDetails = () => {
               {bankFields?.map((field) => renderField(field, studentData))}
             </div>
           </div>
+
+          {/* Office Use Only Details */}
+          {(studentData?.regDate || studentData?.drccVerificationDate || studentData?.learnerCode || studentData?.batch) && (
+            <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+              <h2 className="text-xl font-semibold text-gray-800 mb-4 border-b-2 border-gray-300 pb-2 flex items-center gap-2">
+                <FaIdCard className="text-gray-500" />
+                Office Use Only
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                {officeUseFields?.map((field) => renderField(field, studentData))}
+              </div>
+            </div>
+          )}
+
+          {/* Course Details (DCA/ADCA) */}
+          {(studentData?.courseEnrollmentNo || studentData?.program2 || studentData?.courseDuration || studentData?.certificateNo) && (
+            <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+              <h2 className="text-xl font-semibold text-gray-800 mb-4 border-b-2 border-cyan-200 pb-2 flex items-center gap-2">
+                <FaCertificate className="text-cyan-500" />
+                Course Details
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                {courseDetailsFields?.map((field) => renderField(field, studentData))}
+              </div>
+            </div>
+          )}
+
+          {/* Payment Details */}
+          {(studentData?.paymentMethod || studentData?.utrNumber || studentData?.paymentDatetime) && (
+            <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+              <h2 className="text-xl font-semibold text-gray-800 mb-4 border-b-2 border-emerald-200 pb-2 flex items-center gap-2">
+                <FaMoneyBillWave className="text-emerald-500" />
+                Payment Details
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {paymentDetailsFields?.map((field) => renderField(field, studentData))}
+              </div>
+            </div>
+          )}
 
           {/* Payment History */}
           {studentData?.payments && studentData?.payments?.length > 0 && (

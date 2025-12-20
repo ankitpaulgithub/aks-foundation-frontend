@@ -4,7 +4,7 @@ import { useRouter } from 'next/router'
 import Layout from '../../../../components/education/Layout'
 import axios from 'axios'
 import toast from 'react-hot-toast'
-import { bankOptions , documentFields, occupationOptions, areaOptions, bloodGroupOptions, categoryOptions , maritalStatusOptions, addressFields, personalDetailsFields, officeUseOnly2Fields, officeUseOnlyFields,bankDetailFields,courseOptions, genderOptions, mobileFields, otherCourseOptions, programOptions, boardOptions } from '../../../../constants/BankOptions'
+import { bankOptions , documentFields, occupationOptions, areaOptions, bloodGroupOptions, categoryOptions , maritalStatusOptions, addressFields, personalDetailsFields, officeUseOnly2Fields, officeUseOnlyFields,bankDetailFields,courseOptions, genderOptions, mobileFields, otherCourseOptions, programOptions, boardOptions, streamOptions, graduationStreamOptions } from '../../../../constants/BankOptions'
 import { studentapi } from '../../../../mocks/student'
 
 
@@ -54,37 +54,55 @@ const Admission = ({ initialData = null }) => {
 
   const conditionalCertificates = [
     {
-      name: 'tenthCertificate',
-      // 10th certificate required for all qualifications (10th, 12th, Graduation, Post Graduation)
+      name: 'tenthMarksheet',
+      // 10th marksheet required for all qualifications (10th, 12th, Graduation, Post Graduation)
       show: (courseName) => courseName && ['10th', '12th', 'Graduation', 'Post Graduation'].includes(courseName),
-      label: '10th Certificate'
+      label: '10th Marksheet',
+      required: true
     },
     {
-      name: 'twelfthCertificate',
-      // 12th certificate required for 12th, Graduation, Post Graduation
+      name: 'tenthProvisional',
+      // 10th provisional required for all qualifications (10th, 12th, Graduation, Post Graduation)
+      show: (courseName) => courseName && ['10th', '12th', 'Graduation', 'Post Graduation'].includes(courseName),
+      label: '10th Provisional',
+      required: true
+    },
+    {
+      name: 'twelfthMarksheet',
+      // 12th marksheet optional for 12th, Graduation, Post Graduation
       show: (courseName) => courseName && ['12th', 'Graduation', 'Post Graduation'].includes(courseName),
-      label: '12th Certificate'
+      label: '12th Marksheet',
+      required: false
+    },
+    {
+      name: 'twelfthProvisional',
+      // 12th provisional optional for 12th, Graduation, Post Graduation
+      show: (courseName) => courseName && ['12th', 'Graduation', 'Post Graduation'].includes(courseName),
+      label: '12th Provisional',
+      required: false
     },
     {
       name: 'graduationCertificate',
-      // Graduation certificate required for Graduation, Post Graduation
+      // Graduation certificate optional for Graduation, Post Graduation
       show: (courseName) => courseName && ['Graduation', 'Post Graduation'].includes(courseName),
-      label: 'Graduation Certificate'
+      label: 'Graduation Certificate',
+      required: false
     },
     {
       name: 'postGraduationCertificate',
-      // Post Graduation certificate required for Post Graduation only
+      // Post Graduation certificate optional for Post Graduation only
       show: (courseName) => courseName && courseName === 'Post Graduation',
-      label: 'Post Graduation Certificate'
+      label: 'Post Graduation Certificate',
+      required: false
     }
   ]
 
   const academicLevels = [
     {
       key: 'class10', title: 'Class 10th Information', alwaysRequired: true, fields: [
-        { name: 'class10PassingYear', label: 'Passing Year', placeholder: 'e.g., 2020',pattern: '[0-9]{4}', maxLength: '4', type: 'number' },
         { name: 'class10RollNo', label: 'Roll No.', placeholder: 'e.g., 0000000', pattern: '[0-9]{7}', maxLength: '7', type: 'number' },
         { name: 'class10RollCode', label: 'Roll Code', placeholder: 'e.g., 00000', pattern: '[0-9]{5}', maxLength: '5', type: 'number' },
+        { name: 'class10PassingYear', label: 'Passing Year', placeholder: 'e.g., 2020',pattern: '[0-9]{4}', maxLength: '4', type: 'number' },
         { name: 'class10Board', label: 'Board', type: 'select' },
         { name: 'class10Marks', label: 'Marks/Division', placeholder: 'e.g., 90', type: 'number', pattern: '[0-9]{1,3}', maxLength: '3' },
         { name: 'class10TotalMarks', label: 'Total Marks', placeholder: 'e.g., 90', type: 'number', pattern: '[0-9]{1,3}', maxLength: '3' },
@@ -95,35 +113,44 @@ const Admission = ({ initialData = null }) => {
     },
     {
       key: 'class12', title: 'Class 12th Information', requiredFor: ['12th', 'Graduation', 'Post Graduation'], fields: [
-        { name: 'class12PassingYear', label: 'Passing Year', placeholder: 'e.g., 2022', pattern: '[0-9]{4}', maxLength: '4', type: 'number' },
         { name: 'class12RollNo', label: 'Roll No.', placeholder: 'e.g., 00000000', pattern: '[0-9]{8}', maxLength: '8', type: 'number' },
+        { name: 'class12RollCode', label: 'Roll Code', placeholder: 'e.g., 00000', pattern: '[0-9]{5}', maxLength: '5', type: 'number' },
+        { name: 'class12PassingYear', label: 'Passing Year', placeholder: 'e.g., 2022', pattern: '[0-9]{4}', maxLength: '4', type: 'number' },
+        { name: 'class12Stream', label: 'Stream', type: 'select', selectType: 'stream' },
         { name: 'class12SchoolName', label: 'School Name', placeholder: 'School name' },
         { name: 'class12SchoolAddress', label: 'School Address', placeholder: 'School Address' },
         { name: 'class12Marks', label: 'Marks/Division', placeholder: 'e.g., 90', type: 'number', pattern: '[0-9]{1,3}', maxLength: '3' },
         { name: 'class12TotalMarks', label: 'Total Marks', placeholder: 'e.g., 90' , type: 'number', pattern: '[0-9]{1,3}', maxLength: '3' },
         { name: 'class12Percentage', label: 'Percentage', placeholder: 'e.g., 90' },
         { name: 'class12Board', label: 'Board', type: 'select' },
-        { name: 'class12RollCode', label: 'Roll Code', placeholder: 'e.g., 00000', pattern: '[0-9]{5}', maxLength: '5', type: 'number' }
       ]
     },
     {
       key: 'graduation', title: 'Graduation Information', requiredFor: ['Graduation', 'Post Graduation'], fields: [
-        { name: 'graduationSessionYear', label: 'Passing Year', placeholder: 'e.g., 2021', pattern: '[0-9]{4}', maxLength: '4', type: 'number' },
         { name: 'graduationRollNo', label: 'Roll No.', placeholder: 'e.g., 0000000', pattern: '[0-9]{7}', maxLength: '7', type: 'number' },
         { name: 'graduationRollCode', label: 'Roll Code', placeholder: 'e.g., 00000', pattern: '[0-9]{5}', maxLength: '5', type: 'number' },
+        { name: 'graduationSessionYear', label: 'Passing Year', placeholder: 'e.g., 2021', pattern: '[0-9]{4}', maxLength: '4', type: 'number' },
+        { name: 'graduationStream', label: 'Stream', type: 'select', selectType: 'graduationStream' },
         { name: 'graduationMarks', label: 'Marks/Division', placeholder: 'e.g., 90', type: 'number', pattern: '[0-9]{1,3}', maxLength: '3' },
         { name: 'graduationTotalMarks', label: 'Total Marks', placeholder: 'e.g., 90' , type: 'number', pattern: '[0-9]{1,3}', maxLength: '3' },
         { name: 'graduationPercentage', label: 'Percentage', placeholder: 'e.g., 90' },
-        { name: 'graduationBoard', label: 'Board', type: 'select' },
-        { name: 'graduationSchoolName', label: 'College/University Name', placeholder: 'College/University name' },
-        { name: 'graduationSchoolAddress', label: 'College/University Address', placeholder: 'College/University Address' }
+        { name: 'graduationCollegeName', label: 'College Name', placeholder: 'College name' },
+        { name: 'graduationCollegeAddress', label: 'College Address', placeholder: 'College Address' },
+        { name: 'graduationUniversityNameAddress', label: 'University Name & Address', placeholder: 'University name and address' }
       ]
     },
     {
       key: 'postGraduation', title: 'Post Graduation Information', requiredFor: ['Post Graduation'], fields: [
-        { name: 'postGraduationSessionYear', label: 'Session Year', placeholder: 'e.g., 2025-2027' },
-        { name: 'postGraduationRollNo', label: 'Roll No.', placeholder: 'e.g., 0000000' },
-        { name: 'postGraduationSchoolName', label: 'College/University Name', placeholder: 'College/University name' }
+        { name: 'postGraduationRollNo', label: 'Roll No.', placeholder: 'e.g., 0000000', pattern: '[0-9]{7}', maxLength: '7', type: 'number' },
+        { name: 'postGraduationRollCode', label: 'Roll Code', placeholder: 'e.g., 00000', pattern: '[0-9]{5}', maxLength: '5', type: 'number' },
+        { name: 'postGraduationSessionYear', label: 'Passing Year', placeholder: 'e.g., 2024', pattern: '[0-9]{4}', maxLength: '4', type: 'number' },
+        { name: 'postGraduationStream', label: 'Stream', type: 'select', selectType: 'graduationStream' },
+        { name: 'postGraduationMarks', label: 'Marks/Division', placeholder: 'e.g., 90', type: 'number', pattern: '[0-9]{1,3}', maxLength: '3' },
+        { name: 'postGraduationTotalMarks', label: 'Total Marks', placeholder: 'e.g., 90', type: 'number', pattern: '[0-9]{1,3}', maxLength: '3' },
+        { name: 'postGraduationPercentage', label: 'Percentage', placeholder: 'e.g., 90' },
+        { name: 'postGraduationCollegeName', label: 'College Name', placeholder: 'College name' },
+        { name: 'postGraduationCollegeAddress', label: 'College Address', placeholder: 'College Address' },
+        { name: 'postGraduationUniversityNameAddress', label: 'University Name & Address', placeholder: 'University name and address' }
       ]
     }
   ]
@@ -147,15 +174,16 @@ const Admission = ({ initialData = null }) => {
 
     // Class Details
     class10PassingYear: '', class10RollNo: '', class10RollCode: '', class10SchoolName: '',class10SchoolAddress:'', class10Marks: '', class10TotalMarks: '', class10Percentage: '', class10Board: '',
-    class12PassingYear: '', class12RollNo: '', class12RollCode: '', class12SchoolName: '',class12SchoolAddress:'', class12Marks: '', class12TotalMarks: '', class12Percentage: '', class12Board: '',
-    graduationSessionYear: '', graduationRollNo: '', graduationRollCode: '', graduationMarks: '', graduationTotalMarks: '', graduationPercentage: '', graduationBoard: '', graduationSchoolName: '',graduationSchoolAddress:'',
-    postGraduationSessionYear: '', postGraduationRollNo: '', postGraduationSchoolName: '',
+    class12PassingYear: '', class12RollNo: '', class12RollCode: '', class12SchoolName: '',class12SchoolAddress:'', class12Marks: '', class12TotalMarks: '', class12Percentage: '', class12Board: '', class12Stream: '',
+    graduationSessionYear: '', graduationRollNo: '', graduationRollCode: '', graduationMarks: '', graduationTotalMarks: '', graduationPercentage: '', graduationStream: '', graduationCollegeName: '', graduationCollegeAddress: '', graduationUniversityNameAddress: '',
+    postGraduationSessionYear: '', postGraduationRollNo: '', postGraduationRollCode: '', postGraduationMarks: '', postGraduationTotalMarks: '', postGraduationPercentage: '', postGraduationStream: '', postGraduationCollegeName: '', postGraduationCollegeAddress: '', postGraduationUniversityNameAddress: '',
 
     // Bank Details
     bankName: '', bankNameOther: '', accountNumber: '', branchName: '', ifscCode: '',
 
     // Documents
-  studentImage: '', bankPasbook: '', residentialCertificate: '', provisionalCertificate: '', aadhaarFront: '', aadhaarBack: '', drccReceipt: '', tenthCertificate: '', twelfthCertificate: '', graduationCertificate: '', postGraduationCertificate: '',
+    studentImage: '', bankPasbook: '', residentialCertificate: '', provisionalCertificate: '', aadhaarFront: '', aadhaarBack: '', drccReceipt: '', 
+    tenthMarksheet: '', tenthProvisional: '', twelfthMarksheet: '', twelfthProvisional: '', graduationCertificate: '', postGraduationCertificate: '',
     counselorSignature: '', applicantSignature: '',
 
     // Additional fields
@@ -167,11 +195,11 @@ const Admission = ({ initialData = null }) => {
     batchEndDate: '', batchTime1: '', batchTime2: '', remarks: '',
 
     // Office Use Only 2 fields
-    enrollmentNo: '', enrollmentDate: '', program2: '', courseDuration: '',
+    enrollmentNo: '', enrollmentDate: '', program2: '', courseDuration: '', courseEnrollmentNo: '',
     batchName: '', batchMonth: '', batchYear: '', batchTime: '', certificateNo: '', dateOfIssue: '', remarks2: '',password: '',
 
     // Payment Details
-    paymentAmount: '', paymentDate: new Date().toISOString().split('T')[0]
+    paymentAmount: '', paymentDate: new Date().toISOString().split('T')[0], paymentMethod: '', utrNumber: '', paymentDatetime: ''
   }
 
   const [formData, setFormData] = useState(initialData || defaultFormData)
@@ -429,7 +457,7 @@ const Admission = ({ initialData = null }) => {
       emailAddress: a.email || '',
       isPwD: a.isPwD || false,
       disabilityType: a.disabilityType || '',
-      disabilityCertificate: a.disabilityCertificate || '',
+      disabilityCertificate: a.files?.disabilityCertificate || '',
 
       // Address Details
       residentialAddress: a.address || '',
@@ -445,6 +473,7 @@ const Admission = ({ initialData = null }) => {
 
       // Academic Details
       sessionYear: a.sessionYear || '',
+      courseEnrollmentNo: a.courseEnrollmentNo || '',
       courseName: a.qualification || '',
       studentProgram: a.program || '',
       otherCourseName: a.specificCourseName || '',
@@ -464,6 +493,7 @@ const Admission = ({ initialData = null }) => {
       class12PassingYear: a.class12PassingYear || '',
       class12RollNo: a.class12RollNo || '',
       class12RollCode: a.class12RollCode || '',
+      class12Stream: a.class12Stream || '',
       class12SchoolName: a.class12SchoolName || '',
       class12SchoolAddress: a.class12SchoolAddress || '',
       class12Marks: a.class12Marks || '',
@@ -478,14 +508,22 @@ const Admission = ({ initialData = null }) => {
       graduationMarks: a.graduationMarks || '',
       graduationTotalMarks: a.graduationTotalMarks || '',
       graduationPercentage: a.graduationPercentage || '',
-      graduationBoard: a.graduationBoard || '',
-      graduationSchoolName: a.graduationSchoolName || '',
-      graduationSchoolAddress: a.graduationSchoolAddress || '',
+      graduationStream: a.graduationStream || '',
+      graduationCollegeName: a.graduationCollegeName || '',
+      graduationCollegeAddress: a.graduationCollegeAddress || '',
+      graduationUniversityNameAddress: a.graduationUniversityNameAddress || '',
 
       // Post Graduation Details
       postGraduationSessionYear: a.postGraduationSessionYear || '',
       postGraduationRollNo: a.postGraduationRollNo || '',
-      postGraduationSchoolName: a.postGraduationSchoolName || '',
+      postGraduationRollCode: a.postGraduationRollCode || '',
+      postGraduationMarks: a.postGraduationMarks || '',
+      postGraduationTotalMarks: a.postGraduationTotalMarks || '',
+      postGraduationPercentage: a.postGraduationPercentage || '',
+      postGraduationStream: a.postGraduationStream || '',
+      postGraduationCollegeName: a.postGraduationCollegeName || '',
+      postGraduationCollegeAddress: a.postGraduationCollegeAddress || '',
+      postGraduationUniversityNameAddress: a.postGraduationUniversityNameAddress || '',
 
       // Bank Details
       bankName: a.bankName || '',
@@ -502,8 +540,10 @@ const Admission = ({ initialData = null }) => {
       aadhaarFront: a.files?.aadhaarFront || '',
       aadhaarBack: a.files?.aadhaarBack || '',
       drccReceipt: a.files?.drccReceipt || '',
-      tenthCertificate: a.files?.tenthCertificate || '',
-      twelfthCertificate: a.files?.twelfthCertificate || '',
+      tenthMarksheet: a.files?.tenthMarksheet || '',
+      tenthProvisional: a.files?.tenthProvisional || '',
+      twelfthMarksheet: a.files?.twelfthMarksheet || '',
+      twelfthProvisional: a.files?.twelfthProvisional || '',
       graduationCertificate: a.files?.graduationCertificate || '',
       postGraduationCertificate: a.files?.postGraduationCertificate || '',
       counselorSignature: a.files?.counselorSignature || '',
@@ -540,6 +580,9 @@ const Admission = ({ initialData = null }) => {
 
       // Payment Details (not from existing payments, for new payment entry)
       paymentAmount: '',
+      paymentMethod: a.paymentMethod || '',
+      utrNumber: a.utrNumber || '',
+      paymentDatetime: a.paymentDatetime || '',
       
       // Store the original ID for update
       _id: a._id || a.id || ''
@@ -578,12 +621,13 @@ const Admission = ({ initialData = null }) => {
       const noUppercaseFields = [
         'emailAddress', 'password', 'paymentDate', 'dateOfBirth', 'regDate', 
         'drccVerificationDate', 'batchStartDate', 'batchEndDate', 'enrollmentDate', 
-        'dateOfIssue', 'batchTime', 'batchTime1', 'batchTime2',
+        'dateOfIssue', 'batchTime', 'batchTime1', 'batchTime2', 'paymentDatetime',
         // Select/Radio fields with mixed case values
         'gender', 'maritalStatus', 'area', 'category', 'courseName', 'studentProgram',
         'otherCourseName', 'fatherOccupation', 'bloodGroup', 'bankName', 'state', 'district',
-        // Board fields (select dropdowns)
-        'class10Board', 'class12Board', 'graduationBoard'
+        'paymentMethod',
+        // Board and Stream fields (select dropdowns)
+        'class10Board', 'class12Board', 'class12Stream', 'graduationStream', 'postGraduationStream'
       ]
       
       // Convert to uppercase for text fields (except excluded ones)
@@ -668,6 +712,16 @@ const Admission = ({ initialData = null }) => {
           updated.graduationPercentage = ((marks / totalMarks) * 100).toFixed(2)
         } else {
           updated.graduationPercentage = ''
+        }
+      }
+
+      if (field === 'postGraduationMarks' || field === 'postGraduationTotalMarks') {
+        const marks = parseFloat(field === 'postGraduationMarks' ? value : prev.postGraduationMarks) || 0
+        const totalMarks = parseFloat(field === 'postGraduationTotalMarks' ? value : prev.postGraduationTotalMarks) || 0
+        if (totalMarks > 0 && !isNaN(marks) && !isNaN(totalMarks)) {
+          updated.postGraduationPercentage = ((marks / totalMarks) * 100).toFixed(2)
+        } else {
+          updated.postGraduationPercentage = ''
         }
       }
       
@@ -783,6 +837,105 @@ const Admission = ({ initialData = null }) => {
     </div>
   )
 
+  // Helper function to check if value is a URL (existing uploaded file)
+  const isFileUrl = (value) => {
+    return typeof value === 'string' && (value.startsWith('http://') || value.startsWith('https://'))
+  }
+
+  // Helper function to get file name from URL
+  const getFileNameFromUrl = (url) => {
+    if (!url) return ''
+    const parts = url.split('/')
+    return parts[parts.length - 1]
+  }
+
+  // Helper function to render file upload field with preview for existing files
+  const renderFileField = (fieldName, label, required = false, accept = "image/*") => {
+    const currentValue = formData[fieldName]
+    const hasExistingFile = isFileUrl(currentValue)
+    const hasNewFile = currentValue && typeof currentValue === 'object' && currentValue.name
+
+    return (
+      <div className="bg-orange-50 p-3 rounded">
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          {label} {required && <span className="text-red-500">*</span>}
+        </label>
+        
+        {/* Show existing file preview if URL exists */}
+        {hasExistingFile && (
+          <div className="mb-2 p-2 bg-white border border-gray-200 rounded">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span className="text-sm text-gray-600">Existing file:</span>
+                <a 
+                  href={currentValue} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-blue-600 hover:text-blue-800 text-sm underline truncate max-w-[150px]"
+                  title={getFileNameFromUrl(currentValue)}
+                >
+                  {getFileNameFromUrl(currentValue)}
+                </a>
+              </div>
+              <a 
+                href={currentValue} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-xs bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600"
+              >
+                View
+              </a>
+            </div>
+            {/* Image preview for image files */}
+            {currentValue.match(/\.(jpg|jpeg|png|gif|webp|jfif)$/i) && (
+              <div className="mt-2">
+                <img 
+                  src={currentValue} 
+                  alt={label}
+                  className="h-16 w-auto object-cover rounded border border-gray-300"
+                  onError={(e) => { e.target.style.display = 'none' }}
+                />
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Show new file name if selected */}
+        {hasNewFile && (
+          <div className="mb-2 p-2 bg-green-50 border border-green-200 rounded">
+            <div className="flex items-center gap-2">
+              <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+              </svg>
+              <span className="text-sm text-green-700">New file selected: {currentValue.name}</span>
+            </div>
+          </div>
+        )}
+
+        {/* File input */}
+        <div className="flex items-center gap-2">
+          <input
+            type="file"
+            required={required && !hasExistingFile && !hasNewFile}
+            accept={accept}
+            onChange={(e) => handleInputChange(fieldName, e.target.files[0] || null)}
+            className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent"
+          />
+        </div>
+        
+        {/* Help text for edit mode */}
+        {hasExistingFile && (
+          <p className="text-xs text-gray-500 mt-1">
+            Select a new file only if you want to replace the existing one
+          </p>
+        )}
+      </div>
+    )
+  }
+
   // Helper function to calculate percentage
   const calculatePercentage = (levelKey) => {
     const marksField = `${levelKey}Marks`
@@ -887,8 +1040,8 @@ const Admission = ({ initialData = null }) => {
                     onChange={(e) => handleInputChange(field.name, e.target.value)}
                     className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent"
                   >
-                    <option value="">Select Board</option>
-                    {boardOptions.map(option => (
+                    <option value="">{field.selectType === 'stream' || field.selectType === 'graduationStream' ? 'Select Stream' : 'Select Board'}</option>
+                    {(field.selectType === 'stream' ? streamOptions : field.selectType === 'graduationStream' ? graduationStreamOptions : boardOptions).map(option => (
                       <option key={option.value} value={option.value}>{option.label}</option>
                     ))}
                   </select>
@@ -988,6 +1141,48 @@ const Admission = ({ initialData = null }) => {
                     </p>
                   )}
                 </>
+              ) : field.name === 'learnerCode' ? (
+                // Special handling for Learner Code with live validation
+                <>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{field.label}</label>
+                  <input
+                    type={field.type}
+                    value={formData[field.name] || ''}
+                    maxLength={16}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/\D/g, '').slice(0, 16)
+                      handleInputChange(field.name, value)
+                    }}
+                    className={`w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent ${
+                      formData.learnerCode && formData.learnerCode.length === 16 && !['51', '52'].includes(formData.learnerCode.slice(-2))
+                        ? 'border-red-500 bg-red-50'
+                        : 'border-gray-300'
+                    }`}
+                    placeholder={field.placeholder}
+                    inputMode="numeric"
+                  />
+                  {formData.learnerCode && formData.learnerCode.length > 0 && formData.learnerCode.length < 16 && (
+                    <p className="text-yellow-600 text-sm mt-1">
+                      Learner Code must be 16 digits ({formData.learnerCode.length}/16)
+                    </p>
+                  )}
+                  {formData.learnerCode && formData.learnerCode.length === 16 && !['51', '52'].includes(formData.learnerCode.slice(-2)) && (
+                    <p className="text-red-500 text-sm mt-1 flex items-center">
+                      <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                      </svg>
+                      Last 2 digits must be 51 or 52 (current: {formData.learnerCode.slice(-2)})
+                    </p>
+                  )}
+                  {formData.learnerCode && formData.learnerCode.length === 16 && ['51', '52'].includes(formData.learnerCode.slice(-2)) && (
+                    <p className="text-green-600 text-sm mt-1 flex items-center">
+                      <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                      Valid Learner Code
+                    </p>
+                  )}
+                </>
               ) : (
                 <>
                   <label className="block text-sm font-medium text-gray-700 mb-1">{field.label}</label>
@@ -996,18 +1191,9 @@ const Admission = ({ initialData = null }) => {
                     value={formData[field.name] || ''}
                     maxLength={field?.maxLength}
                     pattern={field?.pattern}
-                    onChange={(e) => {
-                      // For learnerCode, only allow digits and max 16 characters
-                      if (field.name === 'learnerCode') {
-                        const value = e.target.value.replace(/\D/g, '').slice(0, 16)
-                        handleInputChange(field.name, value)
-                      } else {
-                        handleInputChange(field.name, e.target.value)
-                      }
-                    }}
+                    onChange={(e) => handleInputChange(field.name, e.target.value)}
                     className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent"
                     placeholder={field.placeholder}
-                    inputMode={field.name === 'learnerCode' ? 'numeric' : undefined}
                   />
                 </>
               )
@@ -1093,7 +1279,8 @@ const Admission = ({ initialData = null }) => {
       { field: 'mobile3', pattern: /^[0-9]{10}$/, message: 'Mobile Number 3 must be exactly 10 digits' },
       { field: 'whatsapp', pattern: /^[0-9]{10}$/, message: 'WhatsApp Number must be exactly 10 digits' },
       { field: 'pinCode', pattern: /^[0-9]{6}$/, message: 'Pin Code must be exactly 6 digits' },
-      { field: 'emailAddress', pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: 'Please enter a valid email address' }
+      { field: 'emailAddress', pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: 'Please enter a valid email address' },
+      { field: 'learnerCode', pattern: /^[0-9]{14}(51|52)$/, message: 'Learner Code must be exactly 16 digits and end with 51 or 52' }
     ]
 
     validations.forEach(({ field, pattern, message }) => {
@@ -1236,7 +1423,7 @@ const Admission = ({ initialData = null }) => {
     }
 
     // Append all file fields (if File object present) using their field names
-    const fileFieldNames = ['studentImage','bankPasbook','residentialCertificate','provisionalCertificate','aadhaarFront','aadhaarBack','drccReceipt','tenthCertificate','twelfthCertificate','graduationCertificate','postGraduationCertificate','disabilityCertificate','counselorSignature','applicantSignature']
+    const fileFieldNames = ['studentImage','bankPasbook','residentialCertificate','provisionalCertificate','aadhaarFront','aadhaarBack','drccReceipt','tenthMarksheet','tenthProvisional','twelfthMarksheet','twelfthProvisional','graduationCertificate','postGraduationCertificate','disabilityCertificate','counselorSignature','applicantSignature']
     
     // Add additional academic level certificate fields
     additionalAcademicLevels.forEach(level => {
@@ -1870,26 +2057,6 @@ const Admission = ({ initialData = null }) => {
                   { name: 'studentProgram', label: 'Program', required: true },
                   programOptions, 'Select Program'
                 )}
-
-                {/* Manual Course Name Input for "Other" option (render as radio buttons) */}
-                <div className="bg-orange-50 p-3 rounded">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Specify Course Name</label>
-                  <div className="flex flex-wrap gap-4 mt-2">
-                    {otherCourseOptions.map(opt => (
-                      <label key={opt.value} className="flex items-center">
-                        <input
-                          type="radio"
-                          name="otherCourseName"
-                          value={opt.value}
-                          checked={formData.otherCourseName === opt.value}
-                          onChange={(e) => handleInputChange('otherCourseName', e.target.value)}
-                          className="mr-2"
-                        />
-                        {opt.label}
-                      </label>
-                    ))}
-                  </div>
-                </div>
               </div>
 
               {/* Academic Sections */}
@@ -1988,66 +2155,34 @@ const Admission = ({ initialData = null }) => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Document Fields */}
                 {documentFields.map(field => (
-                  <div key={field.name} className="bg-orange-50 p-3 rounded">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      {field.label} {field.required && <span className="text-red-500">*</span>}
-                    </label>
-                    <input
-                      type="file"
-                      required={field.required}
-                      accept="image/*"
-                      capture="camera"
-                      onChange={(e) => handleInputChange(field.name, e.target.files[0] || null)}
-                      className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent"
-                    />
+                  <div key={field.name}>
+                    {renderFileField(field.name, field.label, field.required, "image/*")}
                   </div>
                 ))}
 
                 {/* Conditional Certificates */}
                 {conditionalCertificates.map((cert, index) => cert.show(formData.courseName) && (
-                  <div key={index} className="bg-orange-50 p-3 rounded">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      {cert.label} <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="file"
-                      required
-                      accept=".pdf,.jpg,.jpeg,.png"
-                      onChange={(e) => handleInputChange(cert.name, e.target.files[0] || null)}
-                      className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent"
-                    />
+                  <div key={index}>
+                    {renderFileField(cert.name, cert.label, cert.required, ".pdf,.jpg,.jpeg,.png")}
                   </div>
                 ))}
 
                 {/* Additional Academic Level Certificates */}
                 {additionalAcademicLevels.map((level) => (
-                  <div key={`cert_${level.key}`} className="bg-orange-50 p-3 rounded">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      {formData[`${level.key}Title`] || 'Additional Academic'} Certificate <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="file"
-                      required
-                      accept=".pdf,.jpg,.jpeg,.png"
-                      onChange={(e) => handleInputChange(`${level.key}Certificate`, e.target.files[0] || null)}
-                      className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent"
-                    />
+                  <div key={`cert_${level.key}`}>
+                    {renderFileField(
+                      `${level.key}Certificate`,
+                      `${formData[`${level.key}Title`] || 'Additional Academic'} Certificate`,
+                      true,
+                      ".pdf,.jpg,.jpeg,.png"
+                    )}
                   </div>
                 ))}
 
                 {/* Disability Certificate - Conditional */}
                 {formData.isPwD && (
-                  <div className="bg-orange-50 p-3 rounded">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Disability Certificate <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="file"
-                      required
-                      accept=".pdf,.jpg,.jpeg,.png,image/*"
-                      onChange={(e) => handleInputChange('disabilityCertificate', e.target.files[0] || null)}
-                      className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent"
-                    />
+                  <div>
+                    {renderFileField('disabilityCertificate', 'Disability Certificate', true, ".pdf,.jpg,.jpeg,.png,image/*")}
                   </div>
                 )}
 
@@ -2062,6 +2197,8 @@ const Admission = ({ initialData = null }) => {
                     placeholder="Enter password"
                   />
                 </div>
+
+
               </div>
             </div>
 
@@ -2075,37 +2212,225 @@ const Admission = ({ initialData = null }) => {
                 Payment Details
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {paymentFields.map(field => (
-                  <div key={field.name} className="bg-orange-50 p-3 rounded">
+                {/* Payment Method Select */}
+                <div className="bg-orange-50 p-3 rounded">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Payment Method
+                  </label>
+                  <select
+                    value={formData.paymentMethod || ''}
+                    onChange={(e) => {
+                      const method = e.target.value
+                      handleInputChange('paymentMethod', method)
+                      // Auto-set current datetime for Cash payments
+                      if (method === 'Cash') {
+                        const now = new Date()
+                        const localDatetime = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16)
+                        handleInputChange('paymentDatetime', localDatetime)
+                      }
+                    }}
+                    className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent"
+                  >
+                    <option value="">Select Payment Method</option>
+                    <option value="Cash">Cash</option>
+                    <option value="Online">Online</option>
+                  </select>
+                </div>
+
+                {/* Payment Amount */}
+                <div className="bg-orange-50 p-3 rounded">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Payment Amount (₹)
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.paymentAmount || ''}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/\D/g, '').slice(0, 4)
+                      handleInputChange('paymentAmount', value)
+                    }}
+                    className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent"
+                    placeholder="Enter payment amount (max 4 digits)"
+                    maxLength="4"
+                    inputMode="numeric"
+                  />
+                </div>
+
+                {/* Payment DateTime - Conditional based on payment method */}
+                {formData.paymentMethod && (
+                  <div className="bg-orange-50 p-3 rounded">
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      {field.label}
+                      Payment Date & Time {formData.paymentMethod === 'Online' && <span className="text-red-500">*</span>}
                     </label>
                     <input
-                      type={field.type}
-                      disabled={field.disabled}
-                      value={field.name === 'paymentDate' 
-                        ? (formData[field.name] || new Date().toISOString())
-                        : (formData[field.name] || '')
-                      }
-                      onChange={(e) => {
-                        // For paymentAmount, only allow digits and max 4 characters
-                        if (field.name === 'paymentAmount') {
-                          const value = e.target.value.replace(/\D/g, '').slice(0, 4)
-                          handleInputChange(field.name, value)
-                        } else {
-                          handleInputChange(field.name, e.target.value)
-                        }
-                      }}
+                      type="datetime-local"
+                      required={formData.paymentMethod === 'Online'}
+                      disabled={formData.paymentMethod === 'Cash'}
+                      value={formData.paymentDatetime || ''}
+                      onChange={(e) => handleInputChange('paymentDatetime', e.target.value)}
+                      className={`w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent ${
+                        formData.paymentMethod === 'Cash' ? 'bg-gray-100' : ''
+                      }`}
+                    />
+                    {formData.paymentMethod === 'Cash' && (
+                      <p className="text-xs text-gray-500 mt-1">Auto-set to current date & time for cash payments</p>
+                    )}
+                  </div>
+                )}
+
+                {/* UTR Number - Only for Online Payment */}
+                {formData.paymentMethod === 'Online' && (
+                  <div className="bg-orange-50 p-3 rounded">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      UTR Number <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={formData.utrNumber || ''}
+                      onChange={(e) => handleInputChange('utrNumber', e.target.value)}
                       className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent"
-                      placeholder={field.placeholder}
-                      maxLength={field.maxLength}
-                      pattern={field.pattern}
-                      inputMode={field.name === 'paymentAmount' ? 'numeric' : undefined}
+                      placeholder="Enter UTR/Transaction Number"
                     />
                   </div>
-                ))}
+                )}
               </div>
             </div>
+
+                            {/* Specify Course Name - Radio buttons */}
+                {formData.courseName && (
+                  <div className="bg-orange-50 p-3 rounded sm:w-1/2">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Specify Course Name <span className="text-red-500">*</span></label>
+                    <div className="flex flex-wrap gap-4 mt-2">
+                      {otherCourseOptions
+                        .filter(opt => formData.courseName === '10th' ? opt.value === 'DCA' : true)
+                        .map(opt => (
+                          <label key={opt.value} className="flex items-center">
+                            <input
+                              type="radio"
+                              name="otherCourseName"
+                              value={opt.value}
+                              checked={formData.otherCourseName === opt.value}
+                              onChange={(e) => handleInputChange('otherCourseName', e.target.value)}
+                              className="mr-2"
+                              required
+                            />
+                            {opt.label}
+                          </label>
+                        ))}
+                    </div>
+                  </div>
+                )}
+
+            {/* Course Details - Visible when DCA or ADCA is selected */}
+            {(formData.otherCourseName === 'DCA' || formData.otherCourseName === 'ADCA') && (
+              <div className="mb-8 mt-2">
+                <h2 className="text-xl font-semibold text-gray-800 mb-4 border-b-2 border-orange-200 pb-2">
+                  Course Details ({formData.otherCourseName})
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {/* Session Year */}
+                  <div className="bg-orange-50 p-3 rounded">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Session Year</label>
+                    <input
+                      type="text"
+                      value={formData.sessionYear || ''}
+                      onChange={(e) => {
+                        const value = e.target.value.replace(/\D/g, '').slice(0, 4)
+                        handleInputChange('sessionYear', value)
+                      }}
+                      className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent"
+                      placeholder="e.g., 2025"
+                      maxLength="4"
+                      inputMode="numeric"
+                    />
+                  </div>
+
+                  {/* Enrollment Number */}
+                  <div className="bg-orange-50 p-3 rounded">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Enrollment Number</label>
+                    <input
+                      type="text"
+                      value={formData.courseEnrollmentNo || ''}
+                      onChange={(e) => handleInputChange('courseEnrollmentNo', e.target.value)}
+                      className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent"
+                      placeholder="Enter enrollment number"
+                    />
+                  </div>
+
+                  {/* Program */}
+                  <div className="bg-orange-50 p-3 rounded">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Program</label>
+                    <input
+                      type="text"
+                      value={formData.program2 || ''}
+                      onChange={(e) => handleInputChange('program2', e.target.value)}
+                      className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent"
+                      placeholder="Enter program name"
+                    />
+                  </div>
+
+                  {/* Batch Name */}
+                  <div className="bg-orange-50 p-3 rounded">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Batch Name</label>
+                    <input
+                      type="text"
+                      value={formData.batchName || ''}
+                      onChange={(e) => handleInputChange('batchName', e.target.value)}
+                      className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent"
+                      placeholder="e.g., Jan-2025"
+                    />
+                  </div>
+
+                  {/* Batch Time */}
+                  <div className="bg-orange-50 p-3 rounded">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Batch Time</label>
+                    <input
+                      type="text"
+                      value={formData.batchTime || ''}
+                      onChange={(e) => handleInputChange('batchTime', e.target.value)}
+                      className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent"
+                      placeholder="e.g., 10:00 AM - 12:00 PM"
+                    />
+                  </div>
+
+                  {/* Course Duration */}
+                  <div className="bg-orange-50 p-3 rounded">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Course Duration</label>
+                    <input
+                      type="text"
+                      value={formData.courseDuration || ''}
+                      onChange={(e) => handleInputChange('courseDuration', e.target.value)}
+                      className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent"
+                      placeholder="e.g., 6 months"
+                    />
+                  </div>
+
+                  {/* Certificate Number */}
+                  <div className="bg-orange-50 p-3 rounded">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Certificate Number</label>
+                    <input
+                      type="text"
+                      value={formData.certificateNo || ''}
+                      onChange={(e) => handleInputChange('certificateNo', e.target.value)}
+                      className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent"
+                      placeholder="Enter certificate number"
+                    />
+                  </div>
+
+                  {/* Date of Issue */}
+                  <div className="bg-orange-50 p-3 rounded">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Date of Issue</label>
+                    <input
+                      type="date"
+                      value={formData.dateOfIssue || ''}
+                      onChange={(e) => handleInputChange('dateOfIssue', e.target.value)}
+                      className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Submit Button */}
             <div className="flex justify-end space-x-4">

@@ -32,27 +32,22 @@ export const bankOptions = [
 
   export const documentFields = [
     { name: 'studentImage', label: 'Student Image', required: true, accept: 'image/*' },
-    { name: 'bankPasbook', label: 'Bank Pasbook', required: true, accept: 'image/*' },
-    { name: 'residentialCertificate', label: 'Residential Certificate', required: true, accept: 'image/*' },
-    { name: 'provisionalCertificate', label: 'Provisional Certificate', required: true, accept: 'image/*' },
+    { name: 'drccReceipt', label: 'DRCC Receipt', required: true, accept: 'image/*' },
     { name: 'aadhaarFront', label: 'Aadhaar Card Front', required: true, accept: 'image/*' },
     { name: 'aadhaarBack', label: 'Aadhar Card Back', required: true, accept: 'image/*' },
-    { name: 'drccReceipt', label: 'DRCC Receipt', required: true, accept: 'image/*' },
+    { name: 'residentialCertificate', label: 'Residential Certificate', required: true, accept: 'image/*' },
+    { name: 'bankPasbook', label: 'Bank Pasbook', required: true, accept: 'image/*' },
+    { name: 'provisionalCertificate', label: 'Provisional Certificate', required: true, accept: 'image/*' },
     { name: 'counselorSignature', label: 'Counselor Signature', required: false, accept: '.pdf,.jpg,.jpeg,.png' },
     { name: 'applicantSignature', label: 'Applicant Signature', required: false, accept: '.pdf,.jpg,.jpeg,.png' }
   ]
 
   export const occupationOptions = [
     { value: 'Farmer', label: 'Farmer - किसान' },
-    { value: 'Business', label: 'Business' },
-    { value: 'Government Employee', label: 'Government Employee' },
-    { value: 'Private Employee', label: 'Private Employee' },
     { value: 'Teacher', label: 'Teacher' },
     { value: 'Doctor', label: 'Doctor' },
     { value: 'Engineer', label: 'Engineer' },
     { value: 'Lawyer', label: 'Lawyer' },
-    { value: 'Self Employed', label: 'Self Employed' },
-    { value: 'Retired', label: 'Retired' },
     { value: 'Unemployed', label: 'Unemployed' },
     { value: 'Other', label: 'Other' }
   ]
@@ -187,6 +182,30 @@ export const bankOptions = [
 
   export   const genderOptions = ['Male', 'Female', 'Other']
   
+  export const streamOptions = [
+      { value: 'Arts', label: 'Arts' },
+      { value: 'Humanities', label: 'Humanities' },
+      { value: 'Commerce', label: 'Commerce' },
+      { value: 'Science PCM', label: 'Science PCM' },
+      { value: 'Science PCB', label: 'Science PCB' },
+      { value: 'Science PCMB (1st Maths)', label: 'Science PCMB (1st Maths)' },
+      { value: 'Science PCBM (1st Bio)', label: 'Science PCBM (1st Bio)' },
+    ]
+
+  export const graduationStreamOptions = [
+      { value: 'B.A. (Bachelor of Arts)', label: 'B.A. (Bachelor of Arts)' },
+      { value: 'B.Sc. (Bachelor of Science)', label: 'B.Sc. (Bachelor of Science)' },
+      { value: 'B.Tech/B.E. (Bachelor of Technology/Engineering)', label: 'B.Tech/B.E. (Bachelor of Technology/Engineering)' },
+      { value: 'BCA (Bachelor of Computer Applications)', label: 'BCA (Bachelor of Computer Applications)' },
+      { value: 'B.Com (Bachelor of Commerce)', label: 'B.Com (Bachelor of Commerce)' },
+      { value: 'BBA (Bachelor of Business Administration)', label: 'BBA (Bachelor of Business Administration)' },
+      { value: 'B.A. LL.B', label: 'B.A. LL.B' },
+      { value: 'B.B.A. LL.B. ', label: 'B.B.A. LL.B. ' },
+      { value: ' B.Des.', label: ' B.Des.' },
+      { value: 'B.Ed. ', label: 'B.Ed. ' },
+      { value: 'MBBS', label: 'MBBS' },
+    ]
+
   export  const courseOptions = [
       { value: '10th', label: '10th' }, { value: '12th', label: '12th' },
       { value: 'Graduation', label: 'Graduation' }, { value: 'Post Graduation', label: 'Post Graduation' }
