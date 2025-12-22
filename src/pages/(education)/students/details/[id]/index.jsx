@@ -68,9 +68,9 @@ const StudentDetails = () => {
       maritalStatus: a?.maritalStatus || 'Not provided',
       registrationNo: a?.registrationNo || 'Not provided',
       aadhaarNo: a?.aadhaarNo || 'Not provided',
-      isPwD: a?.isPwD,
+      isPwD: a?.isPwD === true || a?.isPwD === 'true' || a?.isPwD === 1,
       disabilityType: a?.disabilityType || '',
-      isActive: a?.isActive,
+      isActive: a?.isActive === true || a?.isActive === 'true' || a?.isActive === 1,
 
       // Address
       address: a?.address || 'Not provided',
@@ -161,6 +161,8 @@ const StudentDetails = () => {
       drccVerificationDate: a?.drccVerificationDate || '',
       learnerCode: a?.learnerCode || '',
       batch: a?.batch || '',
+      allocation: a?.allocation === true || a?.allocation === 'true' || a?.allocation === 1,
+      convert: a?.convert === true || a?.convert === 'true' || a?.convert === 1,
       remarks: a?.remarks || '',
 
       // Course Details (for DCA/ADCA)
@@ -185,15 +187,15 @@ const StudentDetails = () => {
       // Raw data for edit
       _id: a?._id || a?.id || id,
       
-      // Store raw data for detecting additional fields
+      // Store raw data for detecting additional fields (excluding sensitive system fields)
       _rawData: a
     }
   }, [student, id])
 
   // List of all known/handled field keys (to detect additional fields)
   const knownFieldKeys = useMemo(() => new Set([
-    // System fields to exclude
-    '_id', 'id', '__v', 'createdAt', 'updatedAt', 'isDeleted', 'addedBy', 'isAppUser', 'password',
+    // System fields to exclude (sensitive data - MongoDB ObjectIDs and internal fields)
+    '_id', 'id', '__v', 'createdAt', 'updatedAt', 'isDeleted', 'addedBy', 'isAppUser', 'updatedBy',
     // Basic Info
     'firstName', 'middleName', 'lastName', 'nameAsSSC', 'mobileNo1', 'mobileNo2', 'mobileNo3', 'whatsappNo1',
     'gender', 'dateOfBirth', 'category', 'email', 'bloodGroup', 'maritalStatus', 'registrationNo', 
@@ -220,14 +222,21 @@ const StudentDetails = () => {
     'bankName', 'accountNumber', 'branchName', 'ifscCode',
     // Parent
     'fathersName', 'mothersName', 'fatherOccupation',
-    // Office Use Only
-    'regDate', 'drccVerificationDate', 'learnerCode', 'batch', 'remarks',
-    // Course Details (DCA/ADCA)
-    'courseEnrollmentNo', 'program2', 'courseDuration', 'certificateNo', 'dateOfIssue', 'remarks2',
+    // Office Use Only - KYP
+    'regDate', 'drccVerificationDate', 'learnerCode', 'batch', 'batchStartDate', 'batchEndDate', 'batchTime1', 'batchTime2', 'allocation', 'convert', 'remarks',
+    // Office Use Only - SHA
+    'enrollmentNo', 'enrollmentDate', 'program2', 'remarks2',
+    // DCA/ADCA Course Details
+    'otherCourseName', 'sessionYear', 'courseEnrollmentNo', 'courseBatchName', 'courseBatchMonth', 'courseBatchYear', 'batchTime', 'courseDuration', 'certificateNo', 'dateOfIssue',
     // Payment
     'paymentMethod', 'utrNumber', 'paymentDatetime',
     // Special
-    'payments', 'files'
+    'payments', 'files',
+    // Document/File fields (to exclude from Additional Information)
+    'studentImage', 'bankPasbook', 'residentialCertificate', 'provisionalCertificate', 
+    'aadhaarFront', 'aadhaarBack', 'drccReceipt', 'tenthMarksheet', 'tenthProvisional',
+    'twelfthMarksheet', 'twelfthProvisional', 'graduationCertificate', 'postGraduationCertificate',
+    'disabilityCertificate', 'counselorSignature', 'applicantSignature', 'signature'
   ]), [])
 
   // Convert camelCase/snake_case to readable label
@@ -489,19 +498,26 @@ const StudentDetails = () => {
     { label: 'Percentage', key: 'postGraduationPercentage', format: 'percentage', bold: true }
   ]
 
-  const officeUseFields = [
+  const officeUseFieldsKYP = [
     { label: 'Registration Date', key: 'regDate', format: 'date', conditional: true },
     { label: 'DRCC Verification Date', key: 'drccVerificationDate', format: 'date', conditional: true },
     { label: 'Learner Code', key: 'learnerCode', conditional: true },
     { label: 'Batch', key: 'batch', conditional: true },
+    { label: 'Batch Start Date', key: 'batchStartDate', format: 'date', conditional: true },
+    { label: 'Batch End Date', key: 'batchEndDate', format: 'date', conditional: true },
+    { label: 'Batch Time 1', key: 'batchTime1', conditional: true },
+    { label: 'Batch Time 2', key: 'batchTime2', conditional: true },
+    { label: 'Allocation', key: 'allocation', format: 'boolean', conditional: true },
+    { label: 'Convert', key: 'convert', format: 'boolean', conditional: true },
     { label: 'Remarks', key: 'remarks', conditional: true }
   ]
 
-  const courseDetailsFields = [
-    { label: 'Course Enrollment No', key: 'courseEnrollmentNo', conditional: true },
+  const officeUseFieldsSHA = [
+    { label: 'Enrollment Number', key: 'enrollmentNo', conditional: true },
+    { label: 'Enrollment Date', key: 'enrollmentDate', format: 'date', conditional: true },
     { label: 'Program', key: 'program2', conditional: true },
     { label: 'Course Duration', key: 'courseDuration', conditional: true },
-    { label: 'Certificate No', key: 'certificateNo', conditional: true },
+    { label: 'Certificate Number', key: 'certificateNo', conditional: true },
     { label: 'Date of Issue', key: 'dateOfIssue', format: 'date', conditional: true },
     { label: 'Remarks', key: 'remarks2', conditional: true }
   ]
@@ -512,6 +528,16 @@ const StudentDetails = () => {
     { label: 'Payment Date & Time', key: 'paymentDatetime', conditional: true }
   ]
 
+  const specialCourseFields = [
+    { label: 'Session Year', key: 'sessionYear', conditional: true },
+    { label: 'Enrollment Number', key: 'courseEnrollmentNo', conditional: true },
+    { label: 'Batch Name', key: 'courseBatchName', conditional: true },
+    { label: 'Batch Time', key: 'batchTime', conditional: true },
+    { label: 'Course Duration', key: 'courseDuration', conditional: true },
+    { label: 'Certificate Number', key: 'certificateNo', conditional: true },
+    { label: 'Date of Issue', key: 'dateOfIssue', format: 'date', conditional: true }
+  ]
+
   // Reusable field renderer
   const renderField = (field, data) => {
     const value = data?.[field?.key]
@@ -519,8 +545,8 @@ const StudentDetails = () => {
     
     let displayValue = value
     
-    // Handle boolean values - show "Yes" or "No"
-    if (field?.format === 'boolean' || typeof value === 'boolean') {
+    // Handle boolean values - show "Yes" or "No" (check type first for all booleans)
+    if (typeof value === 'boolean' || field?.format === 'boolean') {
       displayValue = value === true ? 'Yes' : value === false ? 'No' : 'Not provided'
     } else if (field?.format === 'date') {
       displayValue = formatDate(value)
@@ -766,28 +792,28 @@ const StudentDetails = () => {
             </div>
           </div>
 
-          {/* Office Use Only Details */}
+          {/* Office Use Only - KYP Program */}
           {(studentData?.regDate || studentData?.drccVerificationDate || studentData?.learnerCode || studentData?.batch) && (
             <div className="bg-white rounded-lg shadow-md p-6 mb-6">
               <h2 className="text-xl font-semibold text-gray-800 mb-4 border-b-2 border-gray-300 pb-2 flex items-center gap-2">
                 <FaIdCard className="text-gray-500" />
-                Office Use Only
+                Office Use Only (KYP Program)
               </h2>
-              <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                {officeUseFields?.map((field) => renderField(field, studentData))}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {officeUseFieldsKYP?.map((field) => renderField(field, studentData))}
               </div>
             </div>
           )}
 
-          {/* Course Details (DCA/ADCA) */}
-          {(studentData?.courseEnrollmentNo || studentData?.program2 || studentData?.courseDuration || studentData?.certificateNo) && (
+          {/* Office Use Only - SHA Program */}
+          {(studentData?.enrollmentNo || studentData?.enrollmentDate || studentData?.program2) && (
             <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-              <h2 className="text-xl font-semibold text-gray-800 mb-4 border-b-2 border-cyan-200 pb-2 flex items-center gap-2">
-                <FaCertificate className="text-cyan-500" />
-                Course Details
+              <h2 className="text-xl font-semibold text-gray-800 mb-4 border-b-2 border-slate-300 pb-2 flex items-center gap-2">
+                <FaIdCard className="text-slate-500" />
+                Office Use Only (SHA Program)
               </h2>
-              <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
-                {courseDetailsFields?.map((field) => renderField(field, studentData))}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {officeUseFieldsSHA?.map((field) => renderField(field, studentData))}
               </div>
             </div>
           )}
@@ -801,6 +827,19 @@ const StudentDetails = () => {
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {paymentDetailsFields?.map((field) => renderField(field, studentData))}
+              </div>
+            </div>
+          )}
+
+          {/* Special Course Details (DCA/ADCA) */}
+          {(studentData?.otherCourseName === 'DCA' || studentData?.otherCourseName === 'ADCA') && (
+            <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+              <h2 className="text-xl font-semibold text-gray-800 mb-4 border-b-2 border-orange-200 pb-2 flex items-center gap-2">
+                <FaCertificate className="text-orange-500" />
+                {studentData?.otherCourseName} Course Details
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {specialCourseFields?.map((field) => renderField(field, studentData))}
               </div>
             </div>
           )}
@@ -819,16 +858,14 @@ const StudentDetails = () => {
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">S.No</th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Transaction ID</th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
                     {studentData?.payments?.map((payment, index) => (
-                      <tr key={payment?._id || payment?.id || index}>
+                      <tr key={index}>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{index + 1}</td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600">{formatCurrency(payment?.amount)}</td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{formatDate(payment?.date)}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{payment?.id || payment?._id || '-'}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -838,7 +875,7 @@ const StudentDetails = () => {
                       <td className="px-6 py-3 text-sm font-semibold text-green-600">
                         {formatCurrency(studentData?.payments?.reduce((sum, p) => sum + (p?.amount || 0), 0))}
                       </td>
-                      <td colSpan="2"></td>
+                      <td></td>
                     </tr>
                   </tfoot>
                 </table>

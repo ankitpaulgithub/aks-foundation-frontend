@@ -7,6 +7,41 @@ import toast from 'react-hot-toast'
 import { bankOptions , documentFields, occupationOptions, areaOptions, bloodGroupOptions, categoryOptions , maritalStatusOptions, addressFields, personalDetailsFields, officeUseOnly2Fields, officeUseOnlyFields,bankDetailFields,courseOptions, genderOptions, mobileFields, otherCourseOptions, programOptions, boardOptions, streamOptions, graduationStreamOptions } from '../../../../constants/BankOptions'
 import { studentapi } from '../../../../mocks/student'
 
+// ========================================
+// Date Formatting Utilities
+// ========================================
+// All dates in the form are displayed and entered in DD-MM-YYYY format for better UX.
+// Backend expects dates in YYYY-MM-DD (ISO) format.
+// These utilities handle the conversion between display and storage formats.
+
+const formatDateToDisplay = (dateStr) => {
+  // Convert yyyy-mm-dd to dd-mm-yyyy for display
+  if (!dateStr) return ''
+  const parts = dateStr.split('-')
+  if (parts.length === 3 && parts[0].length === 4) {
+    return `${parts[2]}-${parts[1]}-${parts[0]}`
+  }
+  return dateStr
+}
+
+const formatDateToISO = (dateStr) => {
+  // Convert dd-mm-yyyy to yyyy-mm-dd for storage
+  if (!dateStr) return ''
+  const parts = dateStr.split('-')
+  if (parts.length === 3 && parts[0].length <= 2) {
+    return `${parts[2]}-${parts[1]}-${parts[0]}`
+  }
+  return dateStr
+}
+
+const getTodayInDDMMYYYY = () => {
+  const today = new Date()
+  const dd = String(today.getDate()).padStart(2, '0')
+  const mm = String(today.getMonth() + 1).padStart(2, '0')
+  const yyyy = today.getFullYear()
+  return `${dd}-${mm}-${yyyy}`
+}
+// ========================================
 
 const Admission = ({ initialData = null }) => {
   const router = useRouter()
@@ -22,6 +57,25 @@ const Admission = ({ initialData = null }) => {
 
   const batchMonths = [ 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'June', 'July', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec' ]
   const batchYears = [ 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026, 2027, 2028, 2029, 2030 ]
+  const sessionYearOptions = [
+    '2016-2017', '2017-2018', '2018-2019', '2019-2020', '2020-2021',
+    '2021-2022', '2022-2023', '2023-2024', '2024-2025', '2025-2026',
+    '2026-2027', '2027-2028', '2028-2029', '2029-2030', '2030-2031'
+  ]
+  
+  const postGraduationStreamOptions = [
+    { value: 'MA', label: 'MA (Master of Arts)' },
+    { value: 'MSc', label: 'MSc (Master of Science)' },
+    { value: 'MBA', label: 'MBA (Master of Business Administration)' },
+    { value: 'MTech', label: 'MTech (Master of Technology)' },
+    { value: 'MEng', label: 'MEng (Master of Engineering)' },
+    { value: 'MArch', label: 'MArch (Master of Architecture)' },
+    { value: 'MFA', label: 'MFA (Master of Fine Arts)' },
+    { value: 'MSW', label: 'MSW (Master of Social Work)' },
+    { value: 'MPH', label: 'MPH (Master of Public Health)' },
+    { value: 'MEd', label: 'MEd (Master of Education)' },
+    { value: 'LLM', label: 'LLM (Master of Laws)' }
+  ]
 
 
   const paymentFields = [
@@ -43,7 +97,7 @@ const Admission = ({ initialData = null }) => {
 
   const addressTextareaFields = [
     { name: 'residentialAddress', label: 'Residential Address', required: true, placeholder: 'Enter your current residential address' },
-    { name: 'permanentAddress', label: 'Permanent Address', required: false, placeholder: 'Enter your permanent address (if different from residential)' }
+    { name: 'permanentAddress', label: 'Permanent Address', required: true, placeholder: 'Enter your permanent address (if different from residential)' }
   ]
 
   const personalSelectFields = [
@@ -128,7 +182,7 @@ const Admission = ({ initialData = null }) => {
     {
       key: 'graduation', title: 'Graduation Information', requiredFor: ['Graduation', 'Post Graduation'], fields: [
         { name: 'graduationRollNo', label: 'Roll No.', placeholder: 'e.g., 0000000', pattern: '[0-9]{7}', maxLength: '7', type: 'number' },
-        { name: 'graduationRollCode', label: 'Roll Code', placeholder: 'e.g., 00000', pattern: '[0-9]{5}', maxLength: '5', type: 'number' },
+        { name: 'graduationRollCode', label: 'Registration number', placeholder: 'e.g., 00000', pattern: '[0-9]{9}', maxLength: '9', type: 'number' },
         { name: 'graduationSessionYear', label: 'Passing Year', placeholder: 'e.g., 2021', pattern: '[0-9]{4}', maxLength: '4', type: 'number' },
         { name: 'graduationStream', label: 'Stream', type: 'select', selectType: 'graduationStream' },
         { name: 'graduationMarks', label: 'Marks/Division', placeholder: 'e.g., 90', type: 'number', pattern: '[0-9]{1,3}', maxLength: '3' },
@@ -142,9 +196,9 @@ const Admission = ({ initialData = null }) => {
     {
       key: 'postGraduation', title: 'Post Graduation Information', requiredFor: ['Post Graduation'], fields: [
         { name: 'postGraduationRollNo', label: 'Roll No.', placeholder: 'e.g., 0000000', pattern: '[0-9]{7}', maxLength: '7', type: 'number' },
-        { name: 'postGraduationRollCode', label: 'Roll Code', placeholder: 'e.g., 00000', pattern: '[0-9]{5}', maxLength: '5', type: 'number' },
+        { name: 'postGraduationRollCode', label: 'Registration number', placeholder: 'e.g., 00000', pattern: '[0-9]{9}', maxLength: '9', type: 'number' },
         { name: 'postGraduationSessionYear', label: 'Passing Year', placeholder: 'e.g., 2024', pattern: '[0-9]{4}', maxLength: '4', type: 'number' },
-        { name: 'postGraduationStream', label: 'Stream', type: 'select', selectType: 'graduationStream' },
+        { name: 'postGraduationStream', label: 'Stream', type: 'select', selectType: 'postGraduationStream' },
         { name: 'postGraduationMarks', label: 'Marks/Division', placeholder: 'e.g., 90', type: 'number', pattern: '[0-9]{1,3}', maxLength: '3' },
         { name: 'postGraduationTotalMarks', label: 'Total Marks', placeholder: 'e.g., 90', type: 'number', pattern: '[0-9]{1,3}', maxLength: '3' },
         { name: 'postGraduationPercentage', label: 'Percentage', placeholder: 'e.g., 90' },
@@ -164,6 +218,7 @@ const Admission = ({ initialData = null }) => {
     bloodGroup: '', maritalStatus: '', category: '', aadhaarNumber: '',
     mobile1: '', mobile2: '', mobile3: '', whatsapp: '', emailAddress: '',
     isPwD: false, disabilityType: '', disabilityCertificate: '',
+    financialYear: '',
 
     // Address Details
     residentialAddress: '', permanentAddress: '', state: '', stateCode: '', area: '', district: '',
@@ -192,14 +247,14 @@ const Admission = ({ initialData = null }) => {
     // Office Use Only fields
     regNo: '', regDate: '', program: '',
     drccVerificationDate: '', learnerCode: '', batchStartDate: '', batch: '',
-    batchEndDate: '', batchTime1: '', batchTime2: '', remarks: '',
+    batchEndDate: '', batchTime1: '', batchTime2: '', allocation: false, convert: false, remarks: '',
 
     // Office Use Only 2 fields
     enrollmentNo: '', enrollmentDate: '', program2: '', courseDuration: '', courseEnrollmentNo: '',
-    batchName: '', batchMonth: '', batchYear: '', batchTime: '', certificateNo: '', dateOfIssue: '', remarks2: '',password: '',
+    batchName: '', batchMonth: '', batchYear: '', courseBatchName: '', courseBatchMonth: '', courseBatchYear: '', batchTime: '', certificateNo: '', dateOfIssue: '', remarks2: '',password: '',
 
     // Payment Details
-    paymentAmount: '', paymentDate: new Date().toISOString().split('T')[0], paymentMethod: '', utrNumber: '', paymentDatetime: ''
+    paymentAmount: '', paymentDate: getTodayInDDMMYYYY(), paymentMethod: '', utrNumber: '', paymentDatetime: ''
   }
 
   const [formData, setFormData] = useState(initialData || defaultFormData)
@@ -444,7 +499,7 @@ const Admission = ({ initialData = null }) => {
       fatherOccupation: a.fatherOccupation || '',
       fatherOccupationOther: a.fatherOccupationOther || '',
       motherName: a.mothersName || '',
-      dateOfBirth: a.dateOfBirth ? a.dateOfBirth.split('T')[0] : '',
+      dateOfBirth: a.dateOfBirth ? formatDateToDisplay(a.dateOfBirth.split('T')[0]) : '',
       gender: a.gender || '',
       bloodGroup: a.bloodGroup || '',
       maritalStatus: a.maritalStatus || '',
@@ -456,8 +511,8 @@ const Admission = ({ initialData = null }) => {
       whatsapp: a.whatsappNo1 || '',
       emailAddress: a.email || '',
       isPwD: a.isPwD || false,
-      disabilityType: a.disabilityType || '',
-      disabilityCertificate: a.files?.disabilityCertificate || '',
+      disabilityType: a.isPwD ? (a.disabilityType || '') : '',
+      disabilityCertificate: a.isPwD ? (a.files?.disabilityCertificate || '') : '',
 
       // Address Details
       residentialAddress: a.address || '',
@@ -472,6 +527,7 @@ const Admission = ({ initialData = null }) => {
       postOffice: a.postOffice || '',
 
       // Academic Details
+      financialYear: a.financialYear || '',
       sessionYear: a.sessionYear || '',
       courseEnrollmentNo: a.courseEnrollmentNo || '',
       courseName: a.qualification || '',
@@ -552,29 +608,34 @@ const Admission = ({ initialData = null }) => {
       // Office Use Only fields
       regNo: formattedRegNo,
       enrollmentNo: formattedEnrollmentNo,
-      regDate: a.regDate || '',
+      regDate: formatDateToDisplay(a.regDate) || '',
       program: a.program || '',
       payment: a.payment || '',
-      paymentDate: a.paymentDate || new Date().toISOString().split('T')[0],
-      drccVerificationDate: a.drccVerificationDate || '',
+      paymentDate: formatDateToDisplay(a.paymentDate) || getTodayInDDMMYYYY(),
+      drccVerificationDate: formatDateToDisplay(a.drccVerificationDate) || '',
       learnerCode: a.learnerCode || '',
-      batchStartDate: a.batchStartDate || '',
+      batchStartDate: formatDateToDisplay(a.batchStartDate) || '',
       batch: a.batch || '',
-      batchEndDate: a.batchEndDate || '',
+      batchEndDate: formatDateToDisplay(a.batchEndDate) || '',
       batchTime1: a.batchTime1 || '',
       batchTime2: a.batchTime2 || '',
+      allocation: a.allocation || false,
+      convert: a.convert || false,
       remarks: a.remarks || '',
 
       // Office Use Only 2 fields
-      enrollmentDate: a.enrollmentDate || '',
+      enrollmentDate: formatDateToDisplay(a.enrollmentDate) || '',
       program2: a.program2 || '',
       courseDuration: a.courseDuration || '',
       batchName: a.batchName || '',
       batchMonth: a.batchMonth || '',
       batchYear: a.batchYear || '',
+      courseBatchName: a.courseBatchName || '',
+      courseBatchMonth: a.courseBatchMonth || '',
+      courseBatchYear: a.courseBatchYear || '',
       batchTime: a.batchTime || '',
       certificateNo: a.certificateNo || '',
-      dateOfIssue: a.dateOfIssue || '',
+      dateOfIssue: formatDateToDisplay(a.dateOfIssue) || '',
       remarks2: a.remarks2 || '',
       password: a.password || '',
 
@@ -596,7 +657,7 @@ const Admission = ({ initialData = null }) => {
       // Set payment date to today if not provided
       setFormData(prev => ({
         ...prev,
-        paymentDate: prev.paymentDate || new Date().toISOString().split('T')[0],
+        paymentDate: prev.paymentDate || getTodayInDDMMYYYY(),
         password: prev?.password || `${prev?.mobile1 || ''}@${prev?.firstName?.charAt(0)?.toUpperCase() || ''}`
       }))
     }
@@ -776,16 +837,33 @@ const Admission = ({ initialData = null }) => {
   }
 
   // Handler to update batch month/year and compute `batchName` (e.g., "Jan-2025")
+  // Supports both Office Use Only (batchMonth/batchYear/batchName) and Course Details (courseBatchMonth/courseBatchYear/courseBatchName)
   const handleBatchChange = (field, value) => {
     setFormData(prev => {
       const updated = { ...prev, [field]: value }
-      const month = field === 'batchMonth' ? value : (prev.batchMonth || '')
-      const year = field === 'batchYear' ? value : (prev.batchYear || '')
-      if (month && year) {
-        updated.batchName = `${month}-${year}`
-      } else {
-        updated.batchName = ''
+      
+      // Handle Office Use Only batch fields
+      if (field === 'batchMonth' || field === 'batchYear') {
+        const month = field === 'batchMonth' ? value : (prev.batchMonth || '')
+        const year = field === 'batchYear' ? value : (prev.batchYear || '')
+        if (month && year) {
+          updated.batchName = `${month}-${year}`
+        } else {
+          updated.batchName = ''
+        }
       }
+      
+      // Handle Course Details batch fields
+      if (field === 'courseBatchMonth' || field === 'courseBatchYear') {
+        const month = field === 'courseBatchMonth' ? value : (prev.courseBatchMonth || '')
+        const year = field === 'courseBatchYear' ? value : (prev.courseBatchYear || '')
+        if (month && year) {
+          updated.courseBatchName = `${month}-${year}`
+        } else {
+          updated.courseBatchName = ''
+        }
+      }
+      
       return updated
     })
   }
@@ -1040,8 +1118,8 @@ const Admission = ({ initialData = null }) => {
                     onChange={(e) => handleInputChange(field.name, e.target.value)}
                     className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent"
                   >
-                    <option value="">{field.selectType === 'stream' || field.selectType === 'graduationStream' ? 'Select Stream' : 'Select Board'}</option>
-                    {(field.selectType === 'stream' ? streamOptions : field.selectType === 'graduationStream' ? graduationStreamOptions : boardOptions).map(option => (
+                    <option value="">{field.selectType === 'stream' || field.selectType === 'graduationStream' || field.selectType === 'postGraduationStream' ? 'Select Stream' : 'Select Board'}</option>
+                    {(field.selectType === 'stream' ? streamOptions : field.selectType === 'graduationStream' ? graduationStreamOptions : field.selectType === 'postGraduationStream' ? postGraduationStreamOptions : boardOptions).map(option => (
                       <option key={option.value} value={option.value}>{option.label}</option>
                     ))}
                   </select>
@@ -1117,12 +1195,12 @@ const Admission = ({ initialData = null }) => {
                         debouncedValidate('regNo', e.target.value)
                       }}
                       onBlur={(e) => {
-                        if (e.target.value && e.target.value.length >= 8) {
+                        if (e.target.value && e.target.value.length >= 23) {
                           validateFieldAsync('regNo', e.target.value)
                         }
                       }}
                       className={`w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent ${
-                        fieldErrors.regNo ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                        fieldErrors.regNo ? 'border-red-500 bg-red-50' : formData.regNo && formData.regNo.length >= 23 && !fieldErrors.regNo ? 'border-green-500' : 'border-gray-300'
                       }`}
                       placeholder={field.placeholder}
                     />
@@ -1132,12 +1210,25 @@ const Admission = ({ initialData = null }) => {
                       </span>
                     )}
                   </div>
+                  {formData.regNo && formData.regNo.length > 8 && formData.regNo.length < 23 && (
+                    <p className="text-yellow-600 text-sm mt-1">
+                      Registration Number requires 15 numeric digits ({formData.regNo.length - 8}/15)
+                    </p>
+                  )}
                   {fieldErrors.regNo && (
                     <p className="text-red-500 text-sm mt-1 flex items-center">
                       <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
                       </svg>
                       {fieldErrors.regNo}
+                    </p>
+                  )}
+                  {formData.regNo && formData.regNo.length >= 23 && !fieldErrors.regNo && !validatingFields.regNo && (
+                    <p className="text-green-600 text-sm mt-1 flex items-center">
+                      <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                      Valid Registration Number
                     </p>
                   )}
                 </>
@@ -1188,10 +1279,13 @@ const Admission = ({ initialData = null }) => {
                   <label className="block text-sm font-medium text-gray-700 mb-1">{field.label}</label>
                   <input
                     type={field.type}
-                    value={formData[field.name] || ''}
+                    value={field.type === 'date' ? formatDateToISO(formData[field.name] || '') : (formData[field.name] || '')}
                     maxLength={field?.maxLength}
                     pattern={field?.pattern}
-                    onChange={(e) => handleInputChange(field.name, e.target.value)}
+                    onChange={(e) => {
+                      const value = field.type === 'date' ? formatDateToDisplay(e.target.value) : e.target.value
+                      handleInputChange(field.name, value)
+                    }}
                     className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent"
                     placeholder={field.placeholder}
                   />
@@ -1319,6 +1413,25 @@ const Admission = ({ initialData = null }) => {
   const handleSubmit = async (e) => {
     e.preventDefault()
     
+    // Convert all date fields from dd-mm-yyyy to yyyy-mm-dd for backend
+    const dateFields = ['dateOfBirth', 'regDate', 'paymentDate', 'drccVerificationDate', 
+                        'batchStartDate', 'batchEndDate', 'enrollmentDate', 'dateOfIssue']
+    const convertedFormData = { ...formData }
+    dateFields.forEach(field => {
+      if (convertedFormData[field]) {
+        convertedFormData[field] = formatDateToISO(convertedFormData[field])
+      }
+    })
+    
+    // Force clear disability fields if isPwD is false
+    if (!convertedFormData.isPwD) {
+      convertedFormData.disabilityType = ''
+      convertedFormData.disabilityCertificate = ''
+    }
+    
+    // Use convertedFormData for all form operations below
+    const formDataToSubmit = convertedFormData
+    
     // Check for field validation errors (duplicate mobile, email, aadhaar)
     const hasFieldErrors = Object.values(fieldErrors).some(error => error !== '')
     if (hasFieldErrors) {
@@ -1369,9 +1482,17 @@ const Admission = ({ initialData = null }) => {
       residentialAddress: 'address',
       courseName: 'qualification',
       otherCourseName: 'specificCourseName',
+      financialYear: 'financialYear',
       batchName: 'batchName',
       batchMonth: 'batchMonth',
-      batchYear: 'batchYear'
+      batchYear: 'batchYear',
+      courseBatchName: 'courseBatchName',
+      courseBatchMonth: 'courseBatchMonth',
+      courseBatchYear: 'courseBatchYear',
+      isPwD: 'isPwD',
+      disabilityType: 'disabilityType',
+      allocation: 'allocation',
+      convert: 'convert'
     }
 
     // Track which backend keys have been added to avoid duplicates
@@ -1379,9 +1500,10 @@ const Admission = ({ initialData = null }) => {
 
     // Append mapped scalar fields
     Object.keys(mapping).forEach(k => {
-      const value = formData[k]
+      const value = formDataToSubmit[k]
       const backendKey = mapping[k]
-      if (value !== undefined && value !== null && value !== '' && !addedKeys.has(backendKey)) {
+      // For boolean fields, include false values as well
+      if ((typeof value === 'boolean' || (value !== undefined && value !== null && value !== '')) && !addedKeys.has(backendKey)) {
         fd.append(backendKey, String(value))
         addedKeys.add(backendKey)
       }
@@ -1390,11 +1512,11 @@ const Admission = ({ initialData = null }) => {
     // Add registrationNo (use regNo first, fallback to enrollmentNo - both have same numeric part)
     // Extract the full registration number from whichever field has value
     let registrationNo = ''
-    if (formData.regNo && formData.regNo.length > 8) {
-      registrationNo = formData.regNo
-    } else if (formData.enrollmentNo && formData.enrollmentNo.length > 8) {
+    if (formDataToSubmit.regNo && formDataToSubmit.regNo.length > 8) {
+      registrationNo = formDataToSubmit.regNo
+    } else if (formDataToSubmit.enrollmentNo && formDataToSubmit.enrollmentNo.length > 8) {
       // If only enrollmentNo has value, convert it to regNo format
-      const numericPart = formData.enrollmentNo.replace(/^CM7R[A-Z]{3}-/, '')
+      const numericPart = formDataToSubmit.enrollmentNo.replace(/^CM7R[A-Z]{3}-/, '')
       registrationNo = 'CM7RKYP-' + numericPart
     }
     if (registrationNo && !addedKeys.has('registrationNo')) {
@@ -1403,22 +1525,22 @@ const Admission = ({ initialData = null }) => {
     }
 
     // Add program (use studentProgram)
-    const program = formData.studentProgram || ''
+    const program = formDataToSubmit.studentProgram || ''
     if (program && !addedKeys.has('program')) {
       fd.append('program', String(program))
       addedKeys.add('program')
     }
 
     // Auto-generate nameAsSSC from name parts
-    const nameAsSSC = `${formData.firstName || ''} ${formData.middleName || ''} ${formData.lastName || ''}`.trim().replace(/\s+/g, ' ')
+    const nameAsSSC = `${formDataToSubmit.firstName || ''} ${formDataToSubmit.middleName || ''} ${formDataToSubmit.lastName || ''}`.trim().replace(/\s+/g, ' ')
     if (nameAsSSC && !addedKeys.has('nameAsSSC')) {
       fd.append('nameAsSSC', nameAsSSC)
       addedKeys.add('nameAsSSC')
     }
 
     // Payments: if paymentAmount provided, include as payments array
-    if (formData.paymentAmount) {
-      const payments = [{ amount: Number(formData.paymentAmount), date: formData.paymentDate || '' }]
+    if (formDataToSubmit.paymentAmount) {
+      const payments = [{ amount: Number(formDataToSubmit.paymentAmount), date: formDataToSubmit.paymentDate || '' }]
       fd.append('payments', JSON.stringify(payments))
     }
 
@@ -1431,7 +1553,7 @@ const Admission = ({ initialData = null }) => {
     })
     
     fileFieldNames.forEach(name => {
-      const file = formData[name]
+      const file = formDataToSubmit[name]
       if (file) {
         // If it's an object with .name and .size, treat as File
         if (file instanceof File) {
@@ -1447,7 +1569,7 @@ const Admission = ({ initialData = null }) => {
     const excludeFromRemaining = ['regNo', 'enrollmentNo', 'studentProgram', 'paymentAmount', 'paymentDate']
 
     // Append remaining fields that aren't files or previously mapped
-    Object.entries(formData).forEach(([k, v]) => {
+    Object.entries(formDataToSubmit).forEach(([k, v]) => {
       if (!Object.keys(mapping).includes(k) && !fileFieldNames.includes(k) && !excludeFromRemaining.includes(k)) {
         if (v === null || v === undefined || v === '') return
         // Skip if this backend key was already added
@@ -1467,26 +1589,26 @@ const Admission = ({ initialData = null }) => {
 
     // Mapped scalar fields
     Object.keys(mapping).forEach(k => {
-      const value = formData[k]
+      const value = formDataToSubmit[k]
       if (value !== undefined && value !== null && value !== '') payload[mapping[k]] = value
     })
 
     // Include remaining scalar/primitive fields
-    Object.entries(formData).forEach(([k, v]) => {
+    Object.entries(formDataToSubmit).forEach(([k, v]) => {
       if (!Object.keys(mapping).includes(k) && !fileFieldNames.includes(k) && !excludeFromRemaining.includes(k)) {
         payload[k] = v
       }
     })
 
     // Payments
-    if (formData.paymentAmount) {
-      payload.payments = [{ amount: Number(formData.paymentAmount), date: formData.paymentDate || '' }]
+    if (formDataToSubmit.paymentAmount) {
+      payload.payments = [{ amount: Number(formDataToSubmit.paymentAmount), date: formDataToSubmit.paymentDate || '' }]
     }
 
     // Files metadata
     payload.files = {}
     fileFieldNames.forEach(name => {
-      const file = formData[name]
+      const file = formDataToSubmit[name]
       if (file) {
         if (typeof File !== 'undefined' && file instanceof File) {
           payload.files[name] = { fileName: file.name, size: file.size, type: file.type }
@@ -1650,6 +1772,24 @@ const Admission = ({ initialData = null }) => {
               </h2>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {/* Financial Year */}
+                <div className="bg-orange-50 p-3 rounded">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Financial Year <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    required
+                    value={formData.financialYear || ''}
+                    onChange={(e) => handleInputChange('financialYear', e.target.value)}
+                    className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent"
+                  >
+                    <option value="">Select Financial Year</option>
+                    {sessionYearOptions.map(year => (
+                      <option key={year} value={year}>{year}</option>
+                    ))}
+                  </select>
+                </div>
+
                 {/* Personal Details Fields */}
                 {personalDetailsFields.map(field => (
                   <div key={field.name} className="bg-orange-50 p-3 rounded">
@@ -1657,11 +1797,13 @@ const Admission = ({ initialData = null }) => {
                       {field.label} {field.required && <span className="text-red-500">*</span>}
                     </label>
                     <input
-
                       type={field.type}
                       required={field.required}
-                      value={formData[field.name]}
-                      onChange={(e) => handleInputChange(field.name, e.target.value)}
+                      value={field.type === 'date' ? formatDateToISO(formData[field.name]) : formData[field.name]}
+                      onChange={(e) => {
+                        const value = field.type === 'date' ? formatDateToDisplay(e.target.value) : e.target.value
+                        handleInputChange(field.name, value)
+                      }}
                       className="w-full p-2 uppercase border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent"
                       placeholder={field.placeholder}
                     />
@@ -1742,7 +1884,7 @@ const Admission = ({ initialData = null }) => {
                         }
                       }}
                       className={`w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent ${
-                        fieldErrors.aadhaarNumber ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                        fieldErrors.aadhaarNumber ? 'border-red-500 bg-red-50' : formData.aadhaarNumber && formData.aadhaarNumber.length === 12 && !fieldErrors.aadhaarNumber ? 'border-green-500' : 'border-gray-300'
                       }`}
                       placeholder="12 digit Aadhaar number"
                       inputMode="numeric"
@@ -1753,12 +1895,25 @@ const Admission = ({ initialData = null }) => {
                       </span>
                     )}
                   </div>
+                  {formData.aadhaarNumber && formData.aadhaarNumber.length > 0 && formData.aadhaarNumber.length < 12 && (
+                    <p className="text-yellow-600 text-sm mt-1">
+                      Aadhaar Number must be 12 digits ({formData.aadhaarNumber.length}/12)
+                    </p>
+                  )}
                   {fieldErrors.aadhaarNumber && (
                     <p className="text-red-500 text-sm mt-1 flex items-center">
                       <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
                       </svg>
                       {fieldErrors.aadhaarNumber}
+                    </p>
+                  )}
+                  {formData.aadhaarNumber && formData.aadhaarNumber.length === 12 && !fieldErrors.aadhaarNumber && !validatingFields.aadhaarNumber && (
+                    <p className="text-green-600 text-sm mt-1 flex items-center">
+                      <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                      Valid Aadhaar Number
                     </p>
                   )}
                 </div>
@@ -1793,7 +1948,7 @@ const Admission = ({ initialData = null }) => {
                           }
                         }}
                         className={`w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent ${
-                          field.name === 'mobile1' && fieldErrors.mobile1 ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                          field.name === 'mobile1' && fieldErrors.mobile1 ? 'border-red-500 bg-red-50' : field.name === 'mobile1' && formData[field.name] && formData[field.name].length === 10 && !fieldErrors.mobile1 ? 'border-green-500' : 'border-gray-300'
                         }`}
                         placeholder="10 digit mobile number"
                       />
@@ -1803,12 +1958,25 @@ const Admission = ({ initialData = null }) => {
                         </span>
                       )}
                     </div>
+                    {field.name === 'mobile1' && formData[field.name] && formData[field.name].length > 0 && formData[field.name].length < 10 && (
+                      <p className="text-yellow-600 text-sm mt-1">
+                        Mobile Number must be 10 digits ({formData[field.name].length}/10)
+                      </p>
+                    )}
                     {field.name === 'mobile1' && fieldErrors.mobile1 && (
                       <p className="text-red-500 text-sm mt-1 flex items-center">
                         <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
                         </svg>
                         {fieldErrors.mobile1}
+                      </p>
+                    )}
+                    {field.name === 'mobile1' && formData[field.name] && formData[field.name].length === 10 && !fieldErrors.mobile1 && !validatingFields.mobile1 && (
+                      <p className="text-green-600 text-sm mt-1 flex items-center">
+                        <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                        </svg>
+                        Valid Mobile Number
                       </p>
                     )}
                   </div>
@@ -1997,9 +2165,24 @@ const Admission = ({ initialData = null }) => {
                         if (field.maxLength) value = value.slice(0, field.maxLength)
                         handleInputChange(field.name, value)
                       }}
-                      className="w-full p-2 border uppercase border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent"
+                      className={`w-full p-2 border uppercase rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent ${
+                        field.name === 'pinCode' && formData[field.name] && formData[field.name].length === 6 ? 'border-green-500' : 'border-gray-300'
+                      }`}
                       placeholder={field.placeholder}
                     />
+                    {field.name === 'pinCode' && formData[field.name] && formData[field.name].length > 0 && formData[field.name].length < 6 && (
+                      <p className="text-yellow-600 text-sm mt-1">
+                        Pin Code must be 6 digits ({formData[field.name].length}/6)
+                      </p>
+                    )}
+                    {field.name === 'pinCode' && formData[field.name] && formData[field.name].length === 6 && (
+                      <p className="text-green-600 text-sm mt-1 flex items-center">
+                        <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                        </svg>
+                        Valid Pin Code
+                      </p>
+                    )}
                   </div>
                 ))}
               </div>
@@ -2297,11 +2480,23 @@ const Admission = ({ initialData = null }) => {
               </div>
             </div>
 
-                            {/* Specify Course Name - Radio buttons */}
+                            {/* Special Course - Radio buttons */}
                 {formData.courseName && (
                   <div className="bg-orange-50 p-3 rounded sm:w-1/2">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Specify Course Name <span className="text-red-500">*</span></label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Special Course <span className="text-red-500">*</span></label>
                     <div className="flex flex-wrap gap-4 mt-2">
+                      <label className="flex items-center">
+                        <input
+                          type="radio"
+                          name="otherCourseName"
+                          value=""
+                          checked={!formData.otherCourseName}
+                          onChange={(e) => handleInputChange('otherCourseName', e.target.value)}
+                          className="mr-2"
+                          required
+                        />
+                        None
+                      </label>
                       {otherCourseOptions
                         .filter(opt => formData.courseName === '10th' ? opt.value === 'DCA' : true)
                         .map(opt => (
@@ -2332,18 +2527,16 @@ const Admission = ({ initialData = null }) => {
                   {/* Session Year */}
                   <div className="bg-orange-50 p-3 rounded">
                     <label className="block text-sm font-medium text-gray-700 mb-1">Session Year</label>
-                    <input
-                      type="text"
+                    <select
                       value={formData.sessionYear || ''}
-                      onChange={(e) => {
-                        const value = e.target.value.replace(/\D/g, '').slice(0, 4)
-                        handleInputChange('sessionYear', value)
-                      }}
+                      onChange={(e) => handleInputChange('sessionYear', e.target.value)}
                       className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent"
-                      placeholder="e.g., 2025"
-                      maxLength="4"
-                      inputMode="numeric"
-                    />
+                    >
+                      <option value="">Select Session Year</option>
+                      {sessionYearOptions.map(year => (
+                        <option key={year} value={year}>{year}</option>
+                      ))}
+                    </select>
                   </div>
 
                   {/* Enrollment Number */}
@@ -2358,28 +2551,37 @@ const Admission = ({ initialData = null }) => {
                     />
                   </div>
 
-                  {/* Program */}
-                  <div className="bg-orange-50 p-3 rounded">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Program</label>
-                    <input
-                      type="text"
-                      value={formData.program2 || ''}
-                      onChange={(e) => handleInputChange('program2', e.target.value)}
-                      className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent"
-                      placeholder="Enter program name"
-                    />
-                  </div>
-
                   {/* Batch Name */}
                   <div className="bg-orange-50 p-3 rounded">
                     <label className="block text-sm font-medium text-gray-700 mb-1">Batch Name</label>
-                    <input
-                      type="text"
-                      value={formData.batchName || ''}
-                      onChange={(e) => handleInputChange('batchName', e.target.value)}
-                      className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent"
-                      placeholder="e.g., Jan-2025"
-                    />
+                    <div className="grid grid-cols-2 gap-2">
+                      <select
+                        value={formData.courseBatchMonth || ''}
+                        onChange={(e) => handleBatchChange('courseBatchMonth', e.target.value)}
+                        className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none"
+                      >
+                        <option value="">Month</option>
+                        {batchMonths.map(m => (
+                          <option key={m} value={m}>{m}</option>
+                        ))}
+                      </select>
+
+                      <select
+                        value={formData.courseBatchYear || ''}
+                        onChange={(e) => handleBatchChange('courseBatchYear', e.target.value)}
+                        className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none"
+                      >
+                        <option value="">Year</option>
+                        {batchYears.map(y => (
+                          <option key={y} value={y}>{y}</option>
+                        ))}
+                      </select>
+                    </div>
+                    {formData.courseBatchName && (
+                      <div className="mt-2 text-sm text-gray-600">
+                        Selected: <span className="font-medium">{formData.courseBatchName}</span>
+                      </div>
+                    )}
                   </div>
 
                   {/* Batch Time */}
@@ -2396,7 +2598,7 @@ const Admission = ({ initialData = null }) => {
 
                   {/* Course Duration */}
                   <div className="bg-orange-50 p-3 rounded">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Course Duration</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Course Duration (In months)</label>
                     <input
                       type="text"
                       value={formData.courseDuration || ''}
@@ -2423,8 +2625,8 @@ const Admission = ({ initialData = null }) => {
                     <label className="block text-sm font-medium text-gray-700 mb-1">Date of Issue</label>
                     <input
                       type="date"
-                      value={formData.dateOfIssue || ''}
-                      onChange={(e) => handleInputChange('dateOfIssue', e.target.value)}
+                      value={formatDateToISO(formData.dateOfIssue || '')}
+                      onChange={(e) => handleInputChange('dateOfIssue', formatDateToDisplay(e.target.value))}
                       className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none focus:border-transparent"
                     />
                   </div>
@@ -2436,7 +2638,7 @@ const Admission = ({ initialData = null }) => {
             <div className="flex justify-end space-x-4">
               <button
                 type="button"
-                onClick={() => setFormData({ ...defaultFormData, paymentDate: new Date().toISOString().split('T')[0] })}
+                onClick={() => setFormData({ ...defaultFormData, paymentDate: getTodayInDDMMYYYY() })}
                 className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 focus:outline-none cursor-pointer focus:ring-2 focus:ring-blue-500 outline-none"
               >
                 Reset

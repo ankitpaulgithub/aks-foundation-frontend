@@ -37,9 +37,9 @@ export const bankOptions = [
     { name: 'aadhaarBack', label: 'Aadhar Card Back', required: true, accept: 'image/*' },
     { name: 'residentialCertificate', label: 'Residential Certificate', required: true, accept: 'image/*' },
     { name: 'bankPasbook', label: 'Bank Pasbook', required: true, accept: 'image/*' },
-    { name: 'provisionalCertificate', label: 'Provisional Certificate', required: true, accept: 'image/*' },
     { name: 'counselorSignature', label: 'Counselor Signature', required: false, accept: '.pdf,.jpg,.jpeg,.png' },
-    { name: 'applicantSignature', label: 'Applicant Signature', required: false, accept: '.pdf,.jpg,.jpeg,.png' }
+    { name: 'applicantSignature', label: 'Applicant Signature', required: false, accept: '.pdf,.jpg,.jpeg,.png' },
+    { name: 'provisionalCertificate', label: 'Other document', required: false, accept: 'image/*' },
   ]
 
   export const occupationOptions = [
@@ -152,14 +152,14 @@ export const bankOptions = [
   ]
 
   export const addressFields = [
-    { name: 'villageName', label: 'Village Name', required: false, type: 'text', placeholder: 'Enter village/town name' },
+    { name: 'villageName', label: 'Village Name', required: true, type: 'text', placeholder: 'Enter village/town name' },
     { name: 'pinCode', label: 'Pin Code', required: true, type: 'text', placeholder: '6 digit pin code', pattern: '[0-9]{6}', maxLength: '6' },
-    { name: 'blockNagarNigam', label: 'Block / Nagar Nigam / Nagar Parishad / Panchayat', required: false, type: 'text', placeholder: 'Enter block/nagar nigam/nagar parishad/panchayat' },
-    { name: 'postOffice', label: 'Post Office', required: false, type: 'text', placeholder: 'Enter post office name' }
+    { name: 'blockNagarNigam', label: 'Block / Nagar Nigam / Nagar Parishad / Panchayat', required: true, type: 'text', placeholder: 'Enter block/nagar nigam/nagar parishad/panchayat' },
+    { name: 'postOffice', label: 'Post Office', required: true, type: 'text', placeholder: 'Enter post office name' }
   ]
 
   export   const officeUseOnlyFields = [
-    { name: 'regNo', label: 'Reg. No.', type: 'text', placeholder: 'Enter registration number',},
+    { name: 'regNo', label: 'DRCC Reg. No.', type: 'text', placeholder: 'Enter registration number',},
     { name: 'regDate', label: 'Reg. Date', type: 'date' },
     { name: 'drccVerificationDate', label: 'DRCC Verification Date', type: 'date' },
     { name: 'learnerCode', label: 'Learner Code', type: 'text', placeholder: 'Enter 16 digit learner code', pattern: '[0-9]{16}', maxLength: '16' },
